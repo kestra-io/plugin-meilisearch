@@ -53,6 +53,7 @@ dependencies {
     // libs included in the final jar
     // TODO remove it after using the GitHub template as your plugin may not need it
     api "com.google.code.gson:gson:2.11.0"
+    implementation 'com.meilisearch.sdk:meilisearch-java:0.14.0'
 }
 
 
