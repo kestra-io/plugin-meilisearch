@@ -1,11 +1,9 @@
-package meilisearch.plugin;
+package io.kestra.plugin.meilisearch;
 
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Config;
 import com.meilisearch.sdk.Index;
 import com.meilisearch.sdk.exceptions.MeilisearchException;
-import com.meilisearch.sdk.model.TaskInfo;
-import com.meilisearch.sdk.model.TaskStatus;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.tasks.RunnableTask;
