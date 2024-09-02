@@ -1,4 +1,4 @@
-package meilisearch.plugin;
+package io.kestra.plugin.meilisearch;
 
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Config;

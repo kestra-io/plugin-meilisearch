@@ -1,4 +1,4 @@
-package meilisearch.plugin;
+package io.kestra.plugin.meilisearch;
 
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Config;
@@ -45,7 +45,7 @@ import org.slf4j.Logger;
  * Using Docker to open Meilisearch
  * Command on Windows : docker run -it --rm -p 7700:7700 -e MEILI_MASTER_KEY='MASTER_KEY' -v "$(pwd)/meili_data:/meili_data" getmeili/meilisearch:v1.9
  */
-public class DocumentAdd extends Task implements RunnableTask<DocumentAdd.Output> {
+public class DocumentAdd extends AbstractMeilisearchConnection implements RunnableTask<DocumentAdd.Output> {
     @Schema(
         title = "Add document",
         description = "Add document to meilisearch providing URL and credentials and specific index"
@@ -56,30 +56,21 @@ public class DocumentAdd extends Task implements RunnableTask<DocumentAdd.Output
     @PluginProperty(dynamic = true)
     private String index;
 
-    @PluginProperty(dynamic = true)
-    private String url;
-
-    @PluginProperty(dynamic = true)
-    private String key;
-
     @Override
     public DocumentAdd.Output run(RunContext runContext) throws Exception {
         Logger logger = runContext.logger();
+        MeilisearchFactory factory = this.meilisearchFactory(runContext);
 
-        String documentRender = runContext.render(document);
-        String indexRender = runContext.render(index);
-        String urlRender = runContext.render(url);
-        String keyRender = runContext.render(key);
-
-        logger.debug(documentRender);
-        logger.debug(indexRender);
-        logger.debug(urlRender);
-
-        Client client = new Client(new Config(urlRender, keyRender));
-        TaskInfo taskUid;
         try {
-            Index index = client.index(indexRender);
-            taskUid = index.addDocuments(documentRender);
+            Client client = factory.getMeilisearchClient();
+            Index searchIndex = client.index(runContext.render(index));
+            TaskInfo taskUid = searchIndex.addDocuments(runContext.render(document));
+
+            return Output.builder()
+                .outputMessage("Document successfully added to index " + runContext.render(index))
+                .success(taskUid.getStatus().equals(TaskStatus.SUCCEEDED))
+                .build();
+
         } catch (MeilisearchException e) {
             logger.debug(e.getMessage());
             return Output.builder()
@@ -87,18 +78,6 @@ public class DocumentAdd extends Task implements RunnableTask<DocumentAdd.Output
                 .success(false)
                 .build();
         }
-
-        if(taskUid == null) {
-            return Output.builder()
-                .outputMessage("Failed " + indexRender)
-                .success(false)
-                .build();
-        }
-
-        return Output.builder()
-            .outputMessage("Document successfully added to index " + indexRender)
-            .success(taskUid.getStatus().equals(TaskStatus.SUCCEEDED))
-            .build();
     }
 
     @Builder
