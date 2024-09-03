@@ -1,7 +1,6 @@
 package io.kestra.plugin.meilisearch;
 
 import com.meilisearch.sdk.Client;
-import com.meilisearch.sdk.Config;
 import com.meilisearch.sdk.Index;
 import com.meilisearch.sdk.exceptions.MeilisearchException;
 import com.meilisearch.sdk.model.TaskInfo;
@@ -9,7 +8,6 @@ import com.meilisearch.sdk.model.TaskStatus;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.tasks.RunnableTask;
-import io.kestra.core.models.tasks.Task;
 import io.kestra.core.runners.RunContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -47,11 +45,10 @@ import org.slf4j.Logger;
  */
 public class DocumentAdd extends AbstractMeilisearchConnection implements RunnableTask<DocumentAdd.Output> {
     @Schema(
-        title = "Add document",
-        description = "Add document to meilisearch providing URL and credentials and specific index"
+        title = "The file to upload"
     )
     @PluginProperty(dynamic = true)
-    private String document;
+    private String from;
 
     @PluginProperty(dynamic = true)
     private String index;
@@ -64,19 +61,15 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
         try {
             Client client = factory.getMeilisearchClient();
             Index searchIndex = client.index(runContext.render(index));
-            TaskInfo taskUid = searchIndex.addDocuments(runContext.render(document));
+            searchIndex.addDocuments(runContext.render(from));
 
             return Output.builder()
                 .outputMessage("Document successfully added to index " + runContext.render(index))
-                .success(taskUid.getStatus().equals(TaskStatus.SUCCEEDED))
                 .build();
 
         } catch (MeilisearchException e) {
             logger.debug(e.getMessage());
-            return Output.builder()
-                .outputMessage(e.getMessage())
-                .success(false)
-                .build();
+            throw e;
         }
     }
 
@@ -88,6 +81,5 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
             description = "Describe if the add of the document was successful or not and the reason"
         )
         private final String outputMessage;
-        private final boolean success;
     }
 }

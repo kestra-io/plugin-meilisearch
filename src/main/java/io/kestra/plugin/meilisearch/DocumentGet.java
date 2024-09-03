@@ -43,7 +43,7 @@ import org.slf4j.Logger;
  * Using Docker to open Meilisearch
  * Command on Windows : docker run -it --rm -p 7700:7700 -e MEILI_MASTER_KEY='MASTER_KEY' -v "$(pwd)/meili_data:/meili_data" getmeili/meilisearch:v1.9
  */
-public class DocumentGet extends Task implements RunnableTask<DocumentGet.Output> {
+public class DocumentGet extends AbstractMeilisearchConnection implements RunnableTask<DocumentGet.Output> {
     @Schema(
         title = "Get document",
         description = "Get document from meilisearch providing URL and credentials and specific index"
@@ -54,61 +54,34 @@ public class DocumentGet extends Task implements RunnableTask<DocumentGet.Output
     @PluginProperty(dynamic = true)
     private String index;
 
-    @PluginProperty(dynamic = true)
-    private String url;
-
-    @PluginProperty(dynamic = true)
-    private String key;
-
     @Override
     public DocumentGet.Output run(RunContext runContext) throws Exception {
         Logger logger = runContext.logger();
 
-        String idRender = runContext.render(id);
-        String indexRender = runContext.render(index);
-        String urlRender = runContext.render(url);
-        String keyRender = runContext.render(key);
+        MeilisearchFactory factory = this.meilisearchFactory(runContext);
 
-        logger.debug(idRender);
-        logger.debug(indexRender);
-        logger.debug(urlRender);
-
-        Client client = new Client(new Config(urlRender, keyRender));
-        Object output;
         try {
-            Index index = client.index(indexRender);
-            output = index.getDocument(idRender, Object.class);
+            Client client = factory.getMeilisearchClient();
+            Index searchIndex = client.index(runContext.render(index));
+            Object output = searchIndex.getDocument(runContext.render(id), Object.class);
+
+            return Output.builder()
+                .document(output)
+                .build();
+
         } catch (MeilisearchException e) {
             logger.debug(e.getMessage());
-            return Output.builder()
-                .outputMessage(e.getMessage())
-                .success(false)
-                .build();
+            throw e;
         }
-
-        if(output == null) {
-            return Output.builder()
-                .outputMessage("Failed " + indexRender)
-                .success(false)
-                .build();
-        }
-
-        return Output.builder()
-            .outputMessage("Document successfully retrieved")
-            .document(output)
-            .success(true)
-            .build();
     }
 
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
-            title = "Add document is successful or not",
-            description = "Describe if the add of the document was successful or not and the reason"
+            title = "Document retrieved",
+            description = "Return document from id"
         )
-        private final String outputMessage;
-        private final boolean success;
         private final Object document;
     }
 }
