@@ -7,11 +7,9 @@ import io.kestra.core.runners.RunContextFactory;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
 import java.util.Map;
 
+import static io.kestra.plugin.meilisearch.MeilisearchTestUtils.getJsonTestData;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -22,49 +20,42 @@ class DocumentAddGetTest {
 
     @Test
     void testAddGetJsonDocument() throws Exception {
+        final String id = "12";
+        final String index = "testAdd";
 
-        JSONArray array = new JSONArray();
-        ArrayList items = new ArrayList() {{
-            add(new JSONObject().put("id", "11").put("title", "Carol").put("genres",new JSONArray("[\"Romance\",\"Drama\"]")));
-        }};
+        String documents = getJsonTestData(
+            Map.of(
+                "id", id,
+                "title", "Notebook",
+                "genres", new JSONArray("[\"Romance\",\"Drama\"]")
+                )
+        );
 
-        array.put(items);
-        String documents = array.getJSONArray(0).toString();
-
-        RunContext addRunContext = runContextFactory.of(ImmutableMap.of(
-            "document", documents,
-            "index", "test",
-            "url", "http://localhost:7700",
-            "key", "MASTER_KEY"
-        ));
+        RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
 
         DocumentAdd documentAdd = DocumentAdd.builder()
-            .from("{{document}}")
-            .index("{{index}}")
-            .url("{{url}}")
-            .key("{{key}}")
+            .from(documents)
+            .index(index)
+            .url("http://localhost:7700")
+            .key("MASTER_KEY")
             .build();
 
         DocumentAdd.Output runOutput = documentAdd.run(addRunContext);
 
-        RunContext getRunContext = runContextFactory.of(ImmutableMap.of(
-            "id", "11",
-            "index", "test",
-            "url", "http://localhost:7700",
-            "key", "MASTER_KEY"
-        ));
+        Thread.sleep(500);
+
+        RunContext getRunContext = runContextFactory.of(ImmutableMap.of());
 
         DocumentGet documentGet = DocumentGet.builder()
-            .id("{{id}}")
-            .index("{{index}}")
-            .url("{{url}}")
-            .key("{{key}}")
+            .id(id)
+            .index(index)
+            .url("http://localhost:7700")
+            .key("MASTER_KEY")
             .build();
 
         DocumentGet.Output getOutput = documentGet.run(getRunContext);
 
         Map<String, Object> doc = (Map<String, Object>) getOutput.getDocument();
-
-        assertThat(doc.get("id"), is("11"));
+        assertThat(doc.get("id"), is(id));
     }
 }
