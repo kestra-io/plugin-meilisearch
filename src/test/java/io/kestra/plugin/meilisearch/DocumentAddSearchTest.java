@@ -4,11 +4,14 @@ import com.google.common.collect.ImmutableMap;
 import io.kestra.core.junit.annotations.KestraTest;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
+import io.kestra.core.storages.StorageInterface;
+import io.kestra.core.utils.IdUtils;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
-import java.util.Map;
 
-import static io.kestra.plugin.meilisearch.MeilisearchTestUtils.getJsonTestData;
+import java.io.InputStream;
+import java.net.URI;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -18,29 +21,21 @@ class DocumentAddSearchTest {
     @Inject
     private RunContextFactory runContextFactory;
 
+    @Inject
+    private StorageInterface storageInterface;
+
     @Test
     void testDocumentAddAndSearch() throws Exception {
         final String pattern = "John";
 
-        String documents = getJsonTestData(
-            Map.of(
-                "id", "testSearch1",
-                "name", pattern + " Doe"
-            ),
-            Map.of(
-                "id", "testSearch2",
-                "name",  pattern + "Hoe"
-            ),
-            Map.of(
-                "id", "testSearch3",
-                "name", "Bryan Smith"
-            )
-        );
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/basicSearchName.json");
+
+        URI uri = storageInterface.put(null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
 
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
 
         DocumentAdd documentAdd = DocumentAdd.builder()
-            .from(documents)
+            .from(uri.toString())
             .index(SEARCH_INDEX)
             .url("http://localhost:7700")
             .key("MASTER_KEY")

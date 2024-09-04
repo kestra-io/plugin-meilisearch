@@ -7,14 +7,16 @@ import com.meilisearch.sdk.model.Settings;
 import io.kestra.core.junit.annotations.KestraTest;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
+import io.kestra.core.storages.StorageInterface;
+import io.kestra.core.utils.IdUtils;
 import jakarta.inject.Inject;
-import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.List;
 
-import static io.kestra.plugin.meilisearch.MeilisearchTestUtils.getJsonTestData;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -24,49 +26,23 @@ class DocumentAddFacetSearchTest {
     @Inject
     private RunContextFactory runContextFactory;
 
+    @Inject
+    private StorageInterface storageInterface;
+
     @Test
     void testDocumentAddAndFacetSearch() throws Exception {
         final String facetName = "genres";
         final String facetQuery = "fiction";
-        final String[] filters = new String[]{"rating > 3"};
+        final List<String> filters = List.of("rating > 3");
 
-        String documents = getJsonTestData(
-            Map.of(
-                "id", "1",
-                "title", "Film 1",
-                "genres", new JSONArray("[\"Fiction\", \"Drama\"]"),
-                "rating", 10
-            ),
-            Map.of(
-                "id", "2",
-                "title", "Film 2",
-                "genres", new JSONArray("[\"Fiction\"]"),
-                "rating", 7
-            ),
-            Map.of(
-                "id", "3",
-                "title", "Film 3",
-                "genres", new JSONArray("[\"Drama\"]"),
-                "rating", 5
-            ),
-            Map.of(
-                "id", "4",
-                "title", "Film 4",
-                "genres", new JSONArray("[\"Fiction\"]"),
-                "rating", 2
-            ),
-            Map.of(
-                "id", "5",
-                "title", "Film 5",
-                "genres", new JSONArray("[\"Fiction\"]"),
-                "rating", 12
-            )
-        );
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/facetSearchMovies.json");
+
+        URI uri = storageInterface.put(null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
 
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
 
         DocumentAdd documentAdd = DocumentAdd.builder()
-            .from(documents)
+            .from(uri.toString())
             .index(FACET_SEARCH_INDEX)
             .url("http://localhost:7700")
             .key("MASTER_KEY")
@@ -96,7 +72,7 @@ class DocumentAddFacetSearchTest {
     void testFacetSearchEmptyHits() throws Exception {
         final String facetName = "genres";
         final String facetQuery = "fiction";
-        final String[] filters = new String[]{"rating > 1000"}; //Set rating high for empty results
+        final List<String> filters = List.of("rating > 1000"); //Set rating high for empty results
 
         RunContext facetSearchRunContext = runContextFactory.of(ImmutableMap.of());
 
