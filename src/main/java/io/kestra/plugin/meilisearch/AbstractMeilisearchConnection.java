@@ -17,19 +17,8 @@ public abstract class AbstractMeilisearchConnection extends Task implements Meil
     private String url;
     private String key;
 
-    public MeilisearchFactory meilisearchFactory(RunContext runContext) throws IllegalVariableEvaluationException {
-        MeilisearchFactory factory = new MeilisearchFactory();
-        factory.connect(runContext);
-        return factory;
-    }
-
-    public class MeilisearchFactory  {
-        @Getter
-        private Client meilisearchClient;
-
-        public void connect(RunContext runContext) throws IllegalVariableEvaluationException {
-            Config config = new Config(runContext.render(url), runContext.render(key));
-            meilisearchClient = new Client(config);
-        }
+    public Client createClient(RunContext runContext) throws IllegalVariableEvaluationException {
+        Config config = new Config(runContext.render(url), runContext.render(key));
+        return new Client(config);
     }
 }

@@ -54,23 +54,13 @@ public class DocumentGet extends AbstractMeilisearchConnection implements Runnab
 
     @Override
     public DocumentGet.Output run(RunContext runContext) throws Exception {
-        Logger logger = runContext.logger();
+        Client client = this.createClient(runContext);
+        Index searchIndex = client.index(runContext.render(index));
+        Object output = searchIndex.getDocument(runContext.render(id), Object.class);
 
-        MeilisearchFactory factory = this.meilisearchFactory(runContext);
-
-        try {
-            Client client = factory.getMeilisearchClient();
-            Index searchIndex = client.index(runContext.render(index));
-            Object output = searchIndex.getDocument(runContext.render(id), Object.class);
-
-            return Output.builder()
-                .document(output)
-                .build();
-
-        } catch (MeilisearchException e) {
-            logger.debug(e.getMessage());
-            throw e;
-        }
+        return Output.builder()
+            .document(output)
+            .build();
     }
 
     @Builder

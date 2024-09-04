@@ -54,28 +54,20 @@ public class Search extends AbstractMeilisearchConnection implements RunnableTas
 
     @Override
     public Search.Output run(RunContext runContext) throws Exception {
-        Logger logger = runContext.logger();
+        Client client = this.createClient(runContext);
+        Index searchIndex = client.index(runContext.render(index));
+        SearchResult results = searchIndex.search(runContext.render(query));
+        ArrayList<HashMap<String, Object>> hits = results.getHits();
 
-        try {
-            MeilisearchFactory meilisearchFactory = this.meilisearchFactory(runContext);
-            Client client = meilisearchFactory.getMeilisearchClient();
-            Index searchIndex = client.index(runContext.render(index));
-            SearchResult results = searchIndex.search(runContext.render(query));
-            ArrayList<HashMap<String, Object>> hits = results.getHits();
-
-            File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(tempFile))) {
-                oos.writeObject(Optional.of(hits).orElse(new ArrayList<>()));
-            }
-
-            return Output.builder()
-                .uri(runContext.storage().putFile(tempFile))
-                .totalHits(hits.size())
-                .build();
-        } catch (MeilisearchException e) {
-            logger.debug(e.getMessage());
-            throw e;
+        File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(tempFile))) {
+            oos.writeObject(Optional.of(hits).orElse(new ArrayList<>()));
         }
+
+        return Output.builder()
+            .uri(runContext.storage().putFile(tempFile))
+            .totalHits(hits.size())
+            .build();
     }
 
     @Builder
