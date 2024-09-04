@@ -38,11 +38,6 @@ import org.slf4j.Logger;
         )
     }
 )
-
-/**
- * Using Docker to open Meilisearch
- * Command on Windows : docker run -it --rm -p 7700:7700 -e MEILI_MASTER_KEY='MASTER_KEY' -v "$(pwd)/meili_data:/meili_data" getmeili/meilisearch:v1.9
- */
 public class DocumentAdd extends AbstractMeilisearchConnection implements RunnableTask<DocumentAdd.Output> {
     @Schema(
         title = "The file to upload"
@@ -55,22 +50,13 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
 
     @Override
     public DocumentAdd.Output run(RunContext runContext) throws Exception {
-        Logger logger = runContext.logger();
-        MeilisearchFactory factory = this.meilisearchFactory(runContext);
+        Client client = this.createClient(runContext);
+        Index searchIndex = client.index(runContext.render(index));
+        searchIndex.addDocuments(runContext.render(from));
 
-        try {
-            Client client = factory.getMeilisearchClient();
-            Index searchIndex = client.index(runContext.render(index));
-            searchIndex.addDocuments(runContext.render(from));
-
-            return Output.builder()
-                .outputMessage("Document successfully added to index " + runContext.render(index))
-                .build();
-
-        } catch (MeilisearchException e) {
-            logger.debug(e.getMessage());
-            throw e;
-        }
+        return Output.builder()
+            .outputMessage("Document successfully added to index " + runContext.render(index))
+            .build();
     }
 
     @Builder

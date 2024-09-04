@@ -52,44 +52,36 @@ public class FacetSearch extends AbstractMeilisearchConnection implements Runnab
     private String facetQuery;
 
     @PluginProperty(dynamic = true)
-    private String[] filters;
+    private List<String> filters;
 
     @Override
     public FacetSearch.Output run(RunContext runContext) throws Exception {
-        Logger logger = runContext.logger();
+        Client client = this.createClient(runContext);
+        Index searchIndex = client.index(runContext.render(index));
 
-        try {
-            MeilisearchFactory meilisearchFactory = this.meilisearchFactory(runContext);
-            Client client = meilisearchFactory.getMeilisearchClient();
-            Index searchIndex = client.index(runContext.render(index));
+        FacetSearchRequest fsr = FacetSearchRequest.builder()
+            .facetName(runContext.render(facetName))
+            .facetQuery(runContext.render(facetQuery))
+            .filter(runContext.render(filters).toArray(new String[]{}))
+            .build();
 
-            FacetSearchRequest fsr = FacetSearchRequest.builder()
-                .facetName(runContext.render(facetName))
-                .facetQuery(runContext.render(facetQuery))
-                .filter(filters)
-                .build();
+        ArrayList<HashMap<String, Object>> hits = searchIndex.facetSearch(fsr).getFacetHits();
 
-            ArrayList<HashMap<String, Object>> hits = searchIndex.facetSearch(fsr).getFacetHits();
-
-            File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(tempFile))) {
-                oos.writeObject(Optional.of(hits).orElse(new ArrayList<>()));
-            }
-
-            double hitSize = 0.0;
-            if(!hits.isEmpty()) {
-                hitSize = hits.getFirst() != null
-                    ? (Double) hits.getFirst().getOrDefault("count", 0.0) : 0.0;
-            }
-
-            return Output.builder()
-                .uri(runContext.storage().putFile(tempFile))
-                .totalHits(hitSize)
-                .build();
-        } catch (MeilisearchException e) {
-            logger.debug(e.getMessage());
-            throw e;
+        File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(tempFile))) {
+            oos.writeObject(Optional.of(hits).orElse(new ArrayList<>()));
         }
+
+        double hitSize = 0.0;
+        if(!hits.isEmpty()) {
+            hitSize = hits.getFirst() != null
+                ? (Double) hits.getFirst().getOrDefault("count", 0.0) : 0.0;
+        }
+
+        return Output.builder()
+            .uri(runContext.storage().putFile(tempFile))
+            .totalHits(hitSize)
+            .build();
     }
 
     @Builder
