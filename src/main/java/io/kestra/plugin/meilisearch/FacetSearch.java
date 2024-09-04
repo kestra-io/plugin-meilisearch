@@ -3,7 +3,6 @@ package io.kestra.plugin.meilisearch;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.FacetSearchRequest;
 import com.meilisearch.sdk.Index;
-import com.meilisearch.sdk.exceptions.MeilisearchException;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.tasks.RunnableTask;
@@ -11,7 +10,6 @@ import io.kestra.core.runners.RunContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.slf4j.Logger;
 
 import java.io.*;
 import java.net.URI;
@@ -24,7 +22,7 @@ import java.util.*;
 @NoArgsConstructor
 @Schema(
     title = "FacetSearch",
-    description = "Perform facet search from Meilisearch"
+    description = "Perform a facet [search](https://www.meilisearch.com/docs/reference/api/facet_search) from a Meilisearch DB"
 )
 @Plugin(
     examples = {
@@ -32,10 +30,13 @@ import java.util.*;
             title = "Sample facet search",
             code = {
                 """
-                    query: \\"query string to retrieve the doc\\",
-                    url: \\"url of the meilisearch server\\",
-                    key: \\"masterKey of the meilisearch server\\",
-                    index: \\"index\\",
+                    facetQuery: "fiction",
+                    facetName: "genre",
+                    filters:
+                        -"rating > 3"
+                    url: "http://localhost:7700",
+                    key: "MASTER_KEY",
+                    index: "movies"
                 """
             }
         )

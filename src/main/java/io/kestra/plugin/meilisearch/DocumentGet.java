@@ -2,7 +2,6 @@ package io.kestra.plugin.meilisearch;
 
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
-import com.meilisearch.sdk.exceptions.MeilisearchException;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.tasks.RunnableTask;
@@ -10,7 +9,8 @@ import io.kestra.core.runners.RunContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.slf4j.Logger;
+
+import java.util.Map;
 
 @SuperBuilder
 @ToString
@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 @NoArgsConstructor
 @Schema(
     title = "Get Document",
-    description = "Get Document from Meilisearch"
+    description = "Get a [document](https://www.meilisearch.com/docs/reference/api/documents#get-documents-with-get) from Meilisearch using id and index"
 )
 @Plugin(
     examples = {
@@ -27,10 +27,10 @@ import org.slf4j.Logger;
             title = "Get Document from Meilisearch",
             code = {
                 """
-                    id: \\"document id we want to retrieve\\",
-                    url: \\"url of the meilisearch server\\",
-                    key: \\"masterKey of the meilisearch server\\",
-                    index: \\"index provided\\"
+                    id: "11",
+                    url: "http://localhost:7700",
+                    key: "MASTER_KEY",
+                    index: "movies"
                 """
             }
         )
@@ -56,7 +56,7 @@ public class DocumentGet extends AbstractMeilisearchConnection implements Runnab
     public DocumentGet.Output run(RunContext runContext) throws Exception {
         Client client = this.createClient(runContext);
         Index searchIndex = client.index(runContext.render(index));
-        Object output = searchIndex.getDocument(runContext.render(id), Object.class);
+        Map output = searchIndex.getDocument(runContext.render(id), Map.class);
 
         return Output.builder()
             .document(output)
@@ -70,6 +70,6 @@ public class DocumentGet extends AbstractMeilisearchConnection implements Runnab
             title = "Document retrieved",
             description = "Return document from id"
         )
-        private final Object document;
+        private final Map document;
     }
 }
