@@ -9,14 +9,18 @@ import io.kestra.core.models.property.Data;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
+import io.kestra.core.serializers.FileSerde;
 import io.kestra.core.storages.StorageInterface;
 import io.kestra.core.utils.IdUtils;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,11 +38,12 @@ class DocumentAddFacetSearchTest {
 
     @Test
     void testDocumentAddAndFacetSearch() throws Exception {
+        //Search all movies which have "fiction" in "genres" and with "rating" greater than 3
         final String facetName = "genres";
         final String facetQuery = "fiction";
         final List<String> filters = List.of("rating > 3");
 
-        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/facetSearchMovies.json");
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/facetSearchMovies");
 
         URI uri = storageInterface.put(null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
         Data<Map> data = Data.<Map>builder().fromURI(Property.of(uri)).build();
@@ -46,18 +51,24 @@ class DocumentAddFacetSearchTest {
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
 
         DocumentAdd documentAdd = TestUtils.createDocumentAdd(data, FACET_SEARCH_INDEX);
-
         DocumentAdd.Output runOutput = documentAdd.run(addRunContext);
 
         Thread.sleep(500);
 
         RunContext facetSearchRunContext = runContextFactory.of(ImmutableMap.of());
-
         FacetSearch facetSearch = TestUtils.createFacetSearch(facetName, facetQuery, filters, FACET_SEARCH_INDEX);
-
         FacetSearch.Output facetSearchOutput = facetSearch.run(facetSearchRunContext);
 
-        assertThat(facetSearchOutput.getTotalHits(), is(3.0));
+        assertThat(facetSearchOutput.getTotalHits(), is(1L));
+
+        BufferedReader searchInputStream = new BufferedReader(new InputStreamReader(storageInterface.get(null, facetSearchOutput.getUri())));
+        List<Map<String, Object>> result = new ArrayList<>();
+        FileSerde.reader(searchInputStream, r -> result.add((Map<String, Object>) r));
+
+        Map<String, Object> faceResultMap = result.getFirst();
+        assertThat(faceResultMap.get("facetQuery"), is("fiction"));
+        List<Map<String, Object>> facetHits = ((List) faceResultMap.get("facetHits"));
+        assertThat(facetHits.getFirst().get("count"), is(3.0));
     }
 
     @Test
@@ -72,7 +83,7 @@ class DocumentAddFacetSearchTest {
 
         FacetSearch.Output searchOutput = facetSearch.run(facetSearchRunContext);
 
-        assertThat(searchOutput.getTotalHits(), is(0.0));
+        assertThat(searchOutput.getTotalHits(), is(0L));
     }
 
     @BeforeAll

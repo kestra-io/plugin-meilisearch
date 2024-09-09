@@ -3,13 +3,17 @@ package io.kestra.plugin.meilisearch;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.FacetSearchRequest;
 import com.meilisearch.sdk.Index;
+import com.meilisearch.sdk.model.FacetSearchable;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.annotations.PluginProperty;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
+import io.kestra.core.serializers.FileSerde;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import reactor.core.publisher.Flux;
 
 import java.io.*;
 import java.net.URI;
@@ -22,7 +26,10 @@ import java.util.*;
 @NoArgsConstructor
 @Schema(
     title = "FacetSearch",
-    description = "Perform a facet [search](https://www.meilisearch.com/docs/reference/api/facet_search) from a Meilisearch DB"
+    description = """
+        Perform a facet [search](https://www.meilisearch.com/docs/reference/api/facet_search) from a Meilisearch DB.
+        WARNING: make sure to set the [filterable attributes](https://www.meilisearch.com/docs/learn/filtering_and_sorting/search_with_facet_filters#configure-facet-index-settings) before.
+        """
 )
 @Plugin(
     examples = {
@@ -37,6 +44,30 @@ import java.util.*;
                     url: "http://localhost:7700",
                     key: "MASTER_KEY",
                     index: "movies"
+
+                    id: meilisearch-facet-search-flow
+                        namespace: company.team
+
+                    variables:
+                      index: movies
+                      facetQuery: fiction
+                      facetName: genre
+                      host: http://172.18.0.3:7700/
+
+                    tasks:
+                      - id: facet_search_documents
+                        type: io.kestra.plugin.meilisearch.FacetSearch
+                        index: {{ vars.index }}
+                        facetQuery: {{ vars.facetQuery }}
+                        facetName: {{ vars.facetName }}
+                        filters:
+                            - "rating > 3"
+                        url: "{{ vars.host }}"
+                        key: "MASTER_KEY"
+
+                      - id: to_json
+                        type: io.kestra.plugin.serdes.json.IonToJson
+                        from: "{{ outputs.search_documents.uri }}"
                 """
             }
         )
@@ -44,13 +75,13 @@ import java.util.*;
 )
 public class FacetSearch extends AbstractMeilisearchConnection implements RunnableTask<FacetSearch.Output> {
     @PluginProperty(dynamic = true)
-    private String index;
+    private Property<String> index;
 
     @PluginProperty(dynamic = true)
-    private String facetName;
+    private Property<String> facetName;
 
     @PluginProperty(dynamic = true)
-    private String facetQuery;
+    private Property<String> facetQuery;
 
     @PluginProperty(dynamic = true)
     private List<String> filters;
@@ -58,41 +89,35 @@ public class FacetSearch extends AbstractMeilisearchConnection implements Runnab
     @Override
     public FacetSearch.Output run(RunContext runContext) throws Exception {
         Client client = this.createClient(runContext);
-        Index searchIndex = client.index(runContext.render(index));
+        Index searchIndex = client.index(index.as(runContext, String.class));
 
         FacetSearchRequest fsr = FacetSearchRequest.builder()
-            .facetName(runContext.render(facetName))
-            .facetQuery(runContext.render(facetQuery))
+            .facetName(facetName.as(runContext, String.class))
+            .facetQuery(facetQuery.as(runContext, String.class))
             .filter(runContext.render(filters).toArray(new String[]{}))
             .build();
 
-        ArrayList<HashMap<String, Object>> hits = searchIndex.facetSearch(fsr).getFacetHits();
+        var results = searchIndex.facetSearch(fsr);
 
         File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(tempFile))) {
-            oos.writeObject(Optional.of(hits).orElse(new ArrayList<>()));
-        }
+        try (var output = new BufferedWriter(new FileWriter(tempFile), FileSerde.BUFFER_SIZE)) {
+            Flux<FacetSearchable> hitFlux = Flux.just(results);
+            FileSerde.writeAll(output, hitFlux).blockOptional();
 
-        double hitSize = 0.0;
-        if(!hits.isEmpty()) {
-            hitSize = hits.getFirst() != null
-                ? (Double) hits.getFirst().getOrDefault("count", 0.0) : 0.0;
+            return FacetSearch.Output.builder()
+                .uri(runContext.storage().putFile(tempFile))
+                .totalHits((long) results.getFacetHits().size())
+                .build();
         }
-
-        return Output.builder()
-            .uri(runContext.storage().putFile(tempFile))
-            .totalHits(hitSize)
-            .build();
     }
 
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
-            title = "Add document is successful or not",
-            description = "Describe if the add of the document was successful or not and the reason"
+            title = "FacetSearch results"
         )
         private final URI uri;
-        private final Double totalHits;
+        private final Long totalHits;
     }
 }
