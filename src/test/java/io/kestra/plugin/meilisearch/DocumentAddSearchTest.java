@@ -2,6 +2,8 @@ package io.kestra.plugin.meilisearch;
 
 import com.google.common.collect.ImmutableMap;
 import io.kestra.core.junit.annotations.KestraTest;
+import io.kestra.core.models.property.Data;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.kestra.core.storages.StorageInterface;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -31,15 +34,11 @@ class DocumentAddSearchTest {
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/basicSearchName.json");
 
         URI uri = storageInterface.put(null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
+        Data<Map> data = Data.<Map>builder().fromURI(Property.of(uri)).build();
 
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
 
-        DocumentAdd documentAdd = DocumentAdd.builder()
-            .from(uri.toString())
-            .index(SEARCH_INDEX)
-            .url("http://localhost:7700")
-            .key("MASTER_KEY")
-            .build();
+        DocumentAdd documentAdd = TestUtils.createDocumentAdd(data, SEARCH_INDEX);
 
         DocumentAdd.Output runOutput = documentAdd.run(addRunContext);
 
@@ -47,12 +46,7 @@ class DocumentAddSearchTest {
 
         RunContext searchRunContext = runContextFactory.of(ImmutableMap.of());
 
-        Search search = Search.builder()
-            .query(pattern)
-            .index(SEARCH_INDEX)
-            .url("http://localhost:7700")
-            .key("MASTER_KEY")
-            .build();
+        Search search = TestUtils.createSearch(pattern, SEARCH_INDEX);
 
         Search.Output searchOutput = search.run(searchRunContext);
 
@@ -63,12 +57,7 @@ class DocumentAddSearchTest {
     void testSearchEmptyHits() throws Exception {
         RunContext searchRunContext = runContextFactory.of(ImmutableMap.of());
 
-        Search search = Search.builder()
-            .query("random")
-            .index(SEARCH_INDEX)
-            .url("http://localhost:7700")
-            .key("MASTER_KEY")
-            .build();
+        Search search = TestUtils.createSearch("randomPattern", SEARCH_INDEX);
 
         Search.Output searchOutput = search.run(searchRunContext);
 

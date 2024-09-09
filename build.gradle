@@ -52,7 +52,6 @@ dependencies {
 
     // libs included in the final jar
     implementation 'com.meilisearch.sdk:meilisearch-java:0.14.0'
-    implementation 'org.json:json:20211205'
 }
 
 

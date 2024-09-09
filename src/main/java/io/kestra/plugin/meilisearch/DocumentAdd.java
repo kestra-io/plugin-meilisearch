@@ -1,26 +1,23 @@
 package io.kestra.plugin.meilisearch;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
-import io.kestra.core.exceptions.IllegalVariableEvaluationException;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.annotations.PluginProperty;
+import io.kestra.core.models.executions.metrics.Counter;
+import io.kestra.core.models.property.Data;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
-import io.kestra.core.serializers.FileSerde;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import static io.kestra.core.utils.Rethrow.throwFunction;
 
 @SuperBuilder
 @ToString
@@ -37,35 +34,63 @@ import java.util.stream.Collectors;
             title = "Add Document to Meilisearch",
             code = {
                 """
-                    document: {{inputs.file}},
-                    url: "http://localhost:7700",
-                    key: "MASTER_KEY",
-                    index: "movies"
+                    id: meilisearch-flow
+                        namespace: company.team
+
+                    variables:
+                      host: http://172.18.0.3:7700/
+
+                    tasks:
+                      - id: http_download
+                        type: io.kestra.plugin.core.http.Download
+                        uri: https://huggingface.co/datasets/kestra/datasets/raw/main/json/products.json
+
+                      - id: to_ion
+                        type: io.kestra.plugin.serdes.json.JsonToIon
+                        from: "{{ outputs.http_download.uri }}"
+
+                      - id: add
+                        type: io.kestra.plugin.meilisearch.DocumentAdd
+                        url: "{{ vars.host }}"
+                        index: "pokemon"
+                        key: "MASTER_KEY"
+                        from: "{{ outputs.to_ion.uri }}"
                 """
             }
         )
     }
 )
 public class DocumentAdd extends AbstractMeilisearchConnection implements RunnableTask<DocumentAdd.Output> {
+    private static final ObjectMapper MAPPER = new ObjectMapper();
     @Schema(
         title = "The file to upload"
     )
     @PluginProperty(dynamic = true)
-    private Object from;
+    @NotNull
+    private Data<Map> data;
 
     @PluginProperty(dynamic = true)
-    private String index;
+    @NotNull
+    private Property<String> index;
 
     @Override
     public DocumentAdd.Output run(RunContext runContext) throws Exception {
         Client client = this.createClient(runContext);
-        Index searchIndex = client.index(runContext.render(index));
+        Index documentIndex = client.index(this.index.as(runContext, String.class));
 
-        String documents = this.source(runContext);
-        searchIndex.addDocuments(documents);
+        Integer count = this.data.flux(runContext, Map.class, map -> map)
+            .map(throwFunction(row -> {
+                documentIndex.addDocuments(MAPPER.writeValueAsString((Map<String,Object>) row));
+                return 1;
+            }))
+            .reduce(Integer::sum)
+            .blockOptional()
+            .orElse(0);
+
+        runContext.metric(Counter.of("documentAdded", count));
 
         return Output.builder()
-            .outputMessage("Document successfully added to index " + runContext.render(index))
+            .outputMessage("Document successfully added to index " + this.index.as(runContext, String.class))
             .build();
     }
 
@@ -77,18 +102,5 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
             description = "Describe if the add of the document was successful or not and the reason"
         )
         private final String outputMessage;
-    }
-
-    @SuppressWarnings("unchecked")
-    private String source(RunContext runContext) throws IllegalVariableEvaluationException, JsonProcessingException, URISyntaxException, IOException {
-        if (this.from instanceof String valueStr) {
-            URI from = new URI(runContext.render(runContext.render(valueStr)));
-            try(BufferedReader br = new BufferedReader(new InputStreamReader(runContext.storage().getFile(from)), FileSerde.BUFFER_SIZE)) {
-                return br.lines().collect(Collectors.joining());
-            }
-        } else if (this.from instanceof Map valueMap) {
-            return new ObjectMapper().writeValueAsString(runContext.render(valueMap));
-        }
-        throw new IllegalVariableEvaluationException("Invalid value type '" + this.from.getClass() + "'");
     }
 }
