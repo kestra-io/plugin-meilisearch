@@ -1,21 +1,19 @@
 package io.kestra.plugin.meilisearch;
 
-import io.kestra.core.models.annotations.PluginProperty;
+import io.kestra.core.models.property.Property;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 public interface MeilisearchConnectionInterface {
     @NotNull
-    @PluginProperty(dynamic = true)
     @Schema(
-        title = "The connection string."
+        title = "The connection url."
     )
-    String getUrl();
+    Property<String> getUrl();
 
     @NotNull
-    @PluginProperty(dynamic = true)
     @Schema(
         title = "The connection key."
     )
-    String getKey();
+    Property<String> getKey();
 }

@@ -9,8 +9,8 @@ import java.util.Map;
 public class TestUtils {
 
 
-    public static final String URL = "http://localhost:7700";
-    public static final String MASTER_KEY = "MASTER_KEY";
+    public static final Property<String> URL = Property.of("http://localhost:7700");
+    public static final Property<String> MASTER_KEY = Property.of("MASTER_KEY");
 
     public static DocumentAdd createDocumentAdd(Data<Map> data, String index) {
         return DocumentAdd.builder()
@@ -23,8 +23,8 @@ public class TestUtils {
 
     public static DocumentGet createDocumentGet(String id, String index) {
         return DocumentGet.builder()
-            .id(id)
-            .index(index)
+            .documentId(Property.of(id))
+            .index(Property.of(index))
             .url(URL)
             .key(MASTER_KEY)
             .build();
