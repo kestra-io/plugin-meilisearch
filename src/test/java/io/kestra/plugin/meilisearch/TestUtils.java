@@ -32,8 +32,8 @@ public class TestUtils {
 
     public static Search createSearch(String pattern, String index) {
         return Search.builder()
-            .query(pattern)
-            .index(index)
+            .query(Property.of(pattern))
+            .index(Property.of(index))
             .url(URL)
             .key(MASTER_KEY)
             .build();
