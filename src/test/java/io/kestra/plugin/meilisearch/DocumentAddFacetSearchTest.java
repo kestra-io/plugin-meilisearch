@@ -5,6 +5,8 @@ import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Config;
 import com.meilisearch.sdk.model.Settings;
 import io.kestra.core.junit.annotations.KestraTest;
+import io.kestra.core.models.property.Data;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.kestra.core.storages.StorageInterface;
@@ -16,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -38,15 +41,11 @@ class DocumentAddFacetSearchTest {
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/facetSearchMovies.json");
 
         URI uri = storageInterface.put(null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
+        Data<Map> data = Data.<Map>builder().fromURI(Property.of(uri)).build();
 
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
 
-        DocumentAdd documentAdd = DocumentAdd.builder()
-            .from(uri.toString())
-            .index(FACET_SEARCH_INDEX)
-            .url("http://localhost:7700")
-            .key("MASTER_KEY")
-            .build();
+        DocumentAdd documentAdd = TestUtils.createDocumentAdd(data, FACET_SEARCH_INDEX);
 
         DocumentAdd.Output runOutput = documentAdd.run(addRunContext);
 
@@ -54,14 +53,7 @@ class DocumentAddFacetSearchTest {
 
         RunContext facetSearchRunContext = runContextFactory.of(ImmutableMap.of());
 
-        FacetSearch facetSearch = FacetSearch.builder()
-            .facetName(facetName)
-            .facetQuery(facetQuery)
-            .filters(filters)
-            .index(FACET_SEARCH_INDEX)
-            .url("http://localhost:7700")
-            .key("MASTER_KEY")
-            .build();
+        FacetSearch facetSearch = TestUtils.createFacetSearch(facetName, facetQuery, filters, FACET_SEARCH_INDEX);
 
         FacetSearch.Output facetSearchOutput = facetSearch.run(facetSearchRunContext);
 
@@ -76,14 +68,7 @@ class DocumentAddFacetSearchTest {
 
         RunContext facetSearchRunContext = runContextFactory.of(ImmutableMap.of());
 
-        FacetSearch facetSearch = FacetSearch.builder()
-            .facetName(facetName)
-            .facetQuery(facetQuery)
-            .filters(filters)
-            .index(FACET_SEARCH_INDEX)
-            .url("http://localhost:7700")
-            .key("MASTER_KEY")
-            .build();
+        FacetSearch facetSearch = TestUtils.createFacetSearch(facetName, facetQuery, filters, FACET_SEARCH_INDEX);
 
         FacetSearch.Output searchOutput = facetSearch.run(facetSearchRunContext);
 
