@@ -5,11 +5,15 @@ import com.meilisearch.sdk.Index;
 import com.meilisearch.sdk.model.SearchResult;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.annotations.PluginProperty;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
+import io.kestra.core.serializers.FileSerde;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.tuple.Pair;
+import reactor.core.publisher.Flux;
 
 import java.io.*;
 import java.net.URI;
@@ -22,50 +26,63 @@ import java.util.*;
 @NoArgsConstructor
 @Schema(
     title = "Search Document",
-    description = "Search documents from Meilisearch"
+    description = "Perform a basic search query on a Meilisearch database with specific query and return the results in an .ion file"
 )
 @Plugin(
     examples = {
         @io.kestra.core.models.annotations.Example(
-            title = "Perform a [search](https://www.meilisearch.com/docs/reference/api/search#search-in-an-index-with-post) from a Meilisearch DB",
             code = {
                 """
-                    query: "Lord of Rings",
-                    url: "http://localhost:7700",
-                    key: "MASTER_KEY",
-                    index: "movies"
+                    id: meilisearch-search-flow
+                        namespace: company.team
+
+                    variables:
+                      index: movies
+                      query: "Lord of the Rings"
+                      host: http://172.18.0.3:7700/
+
+                    tasks:
+                      - id: search_documents
+                        type: io.kestra.plugin.meilisearch.Search
+                        index: {{ vars.index }}
+                        query: {{ vars.query }}
+                        url: "{{ vars.host }}"
+                        key: "MASTER_KEY"
+
+                      - id: to_json
+                        type: io.kestra.plugin.serdes.json.IonToJson
+                        from: "{{ outputs.search_documents.uri }}"
                 """
             }
         )
     }
 )
 public class Search extends AbstractMeilisearchConnection implements RunnableTask<Search.Output> {
-    @Schema(
-        title = "Basic Search",
-        description = "Basic search providing URL and credentials and specific index"
-    )
-    @PluginProperty(dynamic = true)
-    private String query;
 
     @PluginProperty(dynamic = true)
-    private String index;
+    private Property<String> query;
+
+    @PluginProperty(dynamic = true)
+    private Property<String> index;
 
     @Override
     public Search.Output run(RunContext runContext) throws Exception {
         Client client = this.createClient(runContext);
-        Index searchIndex = client.index(runContext.render(index));
-        SearchResult results = searchIndex.search(runContext.render(query));
+        Index searchIndex = client.index(index.as(runContext, String.class));
+        SearchResult results = searchIndex.search(query.as(runContext, String.class));
         ArrayList<HashMap<String, Object>> hits = results.getHits();
 
         File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(tempFile))) {
-            oos.writeObject(Optional.of(hits).orElse(new ArrayList<>()));
-        }
 
-        return Output.builder()
-            .uri(runContext.storage().putFile(tempFile))
-            .totalHits(hits.size())
-            .build();
+        try (var output = new BufferedWriter(new FileWriter(tempFile), FileSerde.BUFFER_SIZE)) {
+            Flux<Map> hitFlux = Flux.fromIterable(hits);
+            Long count = FileSerde.writeAll(output, hitFlux).blockOptional().orElse(0L);
+
+            return Output.builder()
+                .uri(runContext.storage().putFile(tempFile))
+                .totalHits(count)
+                .build();
+        }
     }
 
     @Builder
@@ -76,6 +93,6 @@ public class Search extends AbstractMeilisearchConnection implements RunnableTas
             description = "Describe if the add of the document was successful or not and the reason"
         )
         private final URI uri;
-        private final int totalHits;
+        private final Long totalHits;
     }
 }
