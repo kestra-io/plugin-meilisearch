@@ -41,10 +41,10 @@ public class TestUtils {
 
     public static FacetSearch createFacetSearch(String facetName, String facetQuery, List<String> filters, String index) {
         return FacetSearch.builder()
-            .facetName(facetName)
-            .facetQuery(facetQuery)
+            .facetName(Property.of(facetName))
+            .facetQuery(Property.of(facetQuery))
             .filters(filters)
-            .index(index)
+            .index(Property.of(index))
             .url(URL)
             .key(MASTER_KEY)
             .build();
