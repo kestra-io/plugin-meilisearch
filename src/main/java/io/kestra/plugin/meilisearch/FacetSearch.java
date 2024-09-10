@@ -5,12 +5,12 @@ import com.meilisearch.sdk.FacetSearchRequest;
 import com.meilisearch.sdk.Index;
 import com.meilisearch.sdk.model.FacetSearchable;
 import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.serializers.FileSerde;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import reactor.core.publisher.Flux;
@@ -74,17 +74,22 @@ import java.util.*;
     }
 )
 public class FacetSearch extends AbstractMeilisearchConnection implements RunnableTask<FacetSearch.Output> {
-    @PluginProperty(dynamic = true)
+
+    @Schema(title = "Index", description = "Index of the collection you want to search in")
+    @NotNull
     private Property<String> index;
 
-    @PluginProperty(dynamic = true)
+    @Schema(title = "Facet name", description = "Name of the facet you wan to perform a search on (ex: facetName: \"genre\" on a film collection)")
+    @NotNull
     private Property<String> facetName;
 
-    @PluginProperty(dynamic = true)
-    private Property<String> facetQuery;
+    @Schema(title = "Facet query", description = "Query that will be used on the specified facetName")
+    @Builder.Default
+    private Property<String> facetQuery = Property.of("");
 
-    @PluginProperty(dynamic = true)
-    private List<String> filters;
+    @Schema(title = "Filters", description = "Additional filters to apply to your facet search")
+    @Builder.Default
+    private Property<List<String>> filters = Property.of(new ArrayList<>());
 
     @Override
     public FacetSearch.Output run(RunContext runContext) throws Exception {
@@ -94,19 +99,19 @@ public class FacetSearch extends AbstractMeilisearchConnection implements Runnab
         FacetSearchRequest fsr = FacetSearchRequest.builder()
             .facetName(facetName.as(runContext, String.class))
             .facetQuery(facetQuery.as(runContext, String.class))
-            .filter(runContext.render(filters).toArray(new String[]{}))
+            .filter(filters.asList(runContext, String.class).toArray(new String[]{}))
             .build();
 
-        var results = searchIndex.facetSearch(fsr);
+        var result = searchIndex.facetSearch(fsr);
 
         File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
         try (var output = new BufferedWriter(new FileWriter(tempFile), FileSerde.BUFFER_SIZE)) {
-            Flux<FacetSearchable> hitFlux = Flux.just(results);
+            Flux<FacetSearchable> hitFlux = Flux.just(result);
             FileSerde.writeAll(output, hitFlux).blockOptional();
 
             return FacetSearch.Output.builder()
                 .uri(runContext.storage().putFile(tempFile))
-                .totalHits((long) results.getFacetHits().size())
+                .totalHits((long) result.getFacetHits().size())
                 .build();
         }
     }
@@ -114,10 +119,9 @@ public class FacetSearch extends AbstractMeilisearchConnection implements Runnab
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
-        @Schema(
-            title = "FacetSearch results"
-        )
+        @Schema(title = "URI to output", description = "Results URI to an Amazon .ion file")
         private final URI uri;
+        @Schema(title = "Hits number", description = "Number of items hit by the facet search request")
         private final Long totalHits;
     }
 }

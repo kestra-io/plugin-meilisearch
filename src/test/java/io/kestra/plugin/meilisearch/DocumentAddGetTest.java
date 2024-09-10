@@ -41,7 +41,7 @@ class DocumentAddGetTest {
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
         DocumentAdd documentAdd = TestUtils.createDocumentAdd(data, index);
 
-        DocumentAdd.Output runOutput = documentAdd.run(addRunContext);
+        documentAdd.run(addRunContext);
 
         Thread.sleep(500);
 
@@ -68,7 +68,7 @@ class DocumentAddGetTest {
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
         DocumentAdd documentAdd = TestUtils.createDocumentAdd(data, index);
 
-        DocumentAdd.Output runOutput = documentAdd.run(addRunContext);
+        documentAdd.run(addRunContext);
 
         Thread.sleep(500);
 

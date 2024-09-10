@@ -45,7 +45,7 @@ class DocumentAddSearchTest {
 
         DocumentAdd documentAdd = TestUtils.createDocumentAdd(data, SEARCH_INDEX);
 
-        DocumentAdd.Output runOutput = documentAdd.run(addRunContext);
+        documentAdd.run(addRunContext);
 
         Thread.sleep(500);
 

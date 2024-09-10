@@ -51,7 +51,7 @@ class DocumentAddFacetSearchTest {
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
 
         DocumentAdd documentAdd = TestUtils.createDocumentAdd(data, FACET_SEARCH_INDEX);
-        DocumentAdd.Output runOutput = documentAdd.run(addRunContext);
+        documentAdd.run(addRunContext);
 
         Thread.sleep(500);
 

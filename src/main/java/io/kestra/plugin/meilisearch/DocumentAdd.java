@@ -4,21 +4,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
 import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.executions.metrics.Counter;
 import io.kestra.core.models.property.Data;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
+import io.kestra.core.models.tasks.VoidOutput;
 import io.kestra.core.runners.RunContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.util.Map;
 
 import static io.kestra.core.utils.Rethrow.throwFunction;
 
+@Slf4j
 @SuperBuilder
 @ToString
 @EqualsAndHashCode
@@ -60,21 +63,20 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
         )
     }
 )
-public class DocumentAdd extends AbstractMeilisearchConnection implements RunnableTask<DocumentAdd.Output> {
+public class DocumentAdd extends AbstractMeilisearchConnection implements RunnableTask<VoidOutput> {
     private static final ObjectMapper MAPPER = new ObjectMapper();
-    @Schema(
-        title = "The file to upload"
-    )
-    @PluginProperty(dynamic = true)
+
     @NotNull
     private Data<Map> data;
 
-    @PluginProperty(dynamic = true)
     @NotNull
+    @Schema(title = "Index", description = "Index of the collection you want to add documents to")
     private Property<String> index;
 
     @Override
-    public DocumentAdd.Output run(RunContext runContext) throws Exception {
+    public VoidOutput run(RunContext runContext) throws Exception {
+        Logger logger = runContext.logger();
+
         Client client = this.createClient(runContext);
         Index documentIndex = client.index(this.index.as(runContext, String.class));
 
@@ -88,19 +90,8 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
             .orElse(0);
 
         runContext.metric(Counter.of("documentAdded", count));
+        logger.info("Successfully added documents to index " + this.index.as(runContext, String.class));
 
-        return Output.builder()
-            .outputMessage("Document successfully added to index " + this.index.as(runContext, String.class))
-            .build();
-    }
-
-    @Builder
-    @Getter
-    public static class Output implements io.kestra.core.models.tasks.Output {
-        @Schema(
-            title = "Add document is successful or not",
-            description = "Describe if the add of the document was successful or not and the reason"
-        )
-        private final String outputMessage;
+        return null;
     }
 }

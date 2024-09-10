@@ -3,7 +3,6 @@ package io.kestra.plugin.meilisearch;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
 import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
@@ -52,19 +51,19 @@ import java.util.Map;
     }
 )
 public class DocumentGet extends AbstractMeilisearchConnection implements RunnableTask<DocumentGet.Output> {
-    @PluginProperty(dynamic = true)
     @NotNull
+    @Schema(title = "Document ID")
     private Property<String> documentId;
 
-    @PluginProperty(dynamic = true)
     @NotNull
+    @Schema(title = "Index", description = "Index of the collections you want to retrieve your document from")
     private Property<String> index;
 
     @Override
     public DocumentGet.Output run(RunContext runContext) throws Exception {
         Client client = this.createClient(runContext);
         Index searchIndex = client.index(index.as(runContext, String.class));
-        Map output = searchIndex.getDocument(documentId.as(runContext, String.class), Map.class);
+        Map<String, Object> output = (Map<String, Object>) searchIndex.getDocument(documentId.as(runContext, String.class), Map.class);
 
         return Output.builder()
             .document(output)
@@ -76,8 +75,8 @@ public class DocumentGet extends AbstractMeilisearchConnection implements Runnab
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
             title = "JSON Document",
-            description = "Returned document with id"
+            description = "Returned document as a JSON object"
         )
-        private final Map document;
+        private final Map<String, Object> document;
     }
 }
