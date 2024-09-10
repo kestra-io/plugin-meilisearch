@@ -4,7 +4,6 @@ import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
 import com.meilisearch.sdk.model.SearchResult;
 import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
@@ -58,10 +57,9 @@ import java.util.*;
 )
 public class Search extends AbstractMeilisearchConnection implements RunnableTask<Search.Output> {
 
-    @PluginProperty(dynamic = true)
+    @Schema(title = "Search Query", description = "Query performed to search on a specific collection")
     private Property<String> query;
-
-    @PluginProperty(dynamic = true)
+    @Schema(title = "Index", description = "Index of the collection you want to perform a search on")
     private Property<String> index;
 
     @Override
@@ -69,7 +67,7 @@ public class Search extends AbstractMeilisearchConnection implements RunnableTas
         Client client = this.createClient(runContext);
         Index searchIndex = client.index(index.as(runContext, String.class));
         SearchResult results = searchIndex.search(query.as(runContext, String.class));
-        ArrayList<HashMap<String, Object>> hits = results.getHits();
+        List<HashMap<String, Object>> hits = results.getHits();
 
         File tempFile = runContext.workingDir().createTempFile(".ion").toFile();
 
@@ -87,11 +85,9 @@ public class Search extends AbstractMeilisearchConnection implements RunnableTas
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
-        @Schema(
-            title = "Add document is successful or not",
-            description = "Describe if the add of the document was successful or not and the reason"
-        )
+        @Schema(title = "URI to output", description = "Results URI to an Amazon .ion file")
         private final URI uri;
+        @Schema(title = "Hits number", description = "Number of items hit by the search request")
         private final Long totalHits;
     }
 }

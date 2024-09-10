@@ -43,7 +43,7 @@ public class TestUtils {
         return FacetSearch.builder()
             .facetName(Property.of(facetName))
             .facetQuery(Property.of(facetQuery))
-            .filters(filters)
+            .filters(Property.of(filters))
             .index(Property.of(index))
             .url(URL)
             .key(MASTER_KEY)
