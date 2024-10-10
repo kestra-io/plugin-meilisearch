@@ -31,7 +31,7 @@ import java.util.Map;
             code = {
                 """
                     id: meilisearch-get-flow
-                        namespace: company.team
+                    namespace: company.team
 
                     variables:
                       id: a123
