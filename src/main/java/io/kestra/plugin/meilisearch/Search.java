@@ -31,25 +31,25 @@ import java.util.*;
         @io.kestra.core.models.annotations.Example(
             code = {
                 """
-                    id: meilisearch-search-flow
-                        namespace: company.team
+                id: meilisearch-search-flow
+                namespace: company.team
 
-                    variables:
-                      index: movies
-                      query: "Lord of the Rings"
-                      host: http://172.18.0.3:7700/
+                variables:
+                  index: movies
+                  query: "Lord of the Rings"
+                  host: http://172.18.0.3:7700/
 
-                    tasks:
-                      - id: search_documents
-                        type: io.kestra.plugin.meilisearch.Search
-                        index: {{ vars.index }}
-                        query: {{ vars.query }}
-                        url: "{{ vars.host }}"
-                        key: "MASTER_KEY"
+                tasks:
+                  - id: search_documents
+                    type: io.kestra.plugin.meilisearch.Search
+                    index: {{ vars.index }}
+                    query: {{ vars.query }}
+                    url: "{{ vars.host }}"
+                    key: "MASTER_KEY"
 
-                      - id: to_json
-                        type: io.kestra.plugin.serdes.json.IonToJson
-                        from: "{{ outputs.search_documents.uri }}"
+                  - id: to_json
+                    type: io.kestra.plugin.serdes.json.IonToJson
+                    from: "{{ outputs.search_documents.uri }}"
                 """
             }
         )
