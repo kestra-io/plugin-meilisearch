@@ -30,21 +30,21 @@ import java.util.Map;
             title = "Get Document from Meilisearch",
             code = {
                 """
-                    id: meilisearch-get-flow
-                    namespace: company.team
+                id: meilisearch-get-flow
+                namespace: company.team
 
-                    variables:
-                      id: a123
-                      index: pokemons
-                      host: http://172.18.0.3:7700/
+                variables:
+                  id: a123
+                  index: pokemons
+                  host: http://172.18.0.3:7700/
 
-                    tasks:
-                      - id: get_document
-                        type: io.kestra.plugin.meilisearch.DocumentGet
-                        index: {{ vars.index }}
-                        documentId: {{ vars.id }}
-                        url: "{{ vars.host }}"
-                        key: "MASTER_KEY"
+                tasks:
+                  - id: get_document
+                    type: io.kestra.plugin.meilisearch.DocumentGet
+                    index: {{ vars.index }}
+                    documentId: {{ vars.id }}
+                    url: "{{ vars.host }}"
+                    key: "MASTER_KEY"
                 """
             }
         )
