@@ -37,37 +37,29 @@ import java.util.*;
             title = "Sample facet search",
             code = {
                 """
-                    facetQuery: "fiction",
-                    facetName: "genre",
+                id: meilisearch-facet-search-flow
+                namespace: company.team
+
+                variables:
+                  index: movies
+                  facetQuery: fiction
+                  facetName: genre
+                  host: http://172.18.0.3:7700/
+
+                tasks:
+                  - id: facet_search_documents
+                    type: io.kestra.plugin.meilisearch.FacetSearch
+                    index: {{ vars.index }}
+                    facetQuery: {{ vars.facetQuery }}
+                    facetName: {{ vars.facetName }}
                     filters:
-                        -"rating > 3"
-                    url: "http://localhost:7700",
-                    key: "MASTER_KEY",
-                    index: "movies"
+                      - "rating > 3"
+                    url: "{{ vars.host }}"
+                    key: "MASTER_KEY"
 
-                    id: meilisearch-facet-search-flow
-                        namespace: company.team
-
-                    variables:
-                      index: movies
-                      facetQuery: fiction
-                      facetName: genre
-                      host: http://172.18.0.3:7700/
-
-                    tasks:
-                      - id: facet_search_documents
-                        type: io.kestra.plugin.meilisearch.FacetSearch
-                        index: {{ vars.index }}
-                        facetQuery: {{ vars.facetQuery }}
-                        facetName: {{ vars.facetName }}
-                        filters:
-                            - "rating > 3"
-                        url: "{{ vars.host }}"
-                        key: "MASTER_KEY"
-
-                      - id: to_json
-                        type: io.kestra.plugin.serdes.json.IonToJson
-                        from: "{{ outputs.search_documents.uri }}"
+                  - id: to_json
+                    type: io.kestra.plugin.serdes.json.IonToJson
+                    from: "{{ outputs.search_documents.uri }}"
                 """
             }
         )
