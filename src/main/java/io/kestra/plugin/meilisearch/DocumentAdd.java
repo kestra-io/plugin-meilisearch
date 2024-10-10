@@ -37,27 +37,27 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
             title = "Add Document to Meilisearch",
             code = {
                 """
-                    id: meilisearch-add-flow
-                    namespace: company.team
+                id: meilisearch-add-flow
+                namespace: company.team
 
-                    variables:
-                      host: http://172.18.0.3:7700/
+                variables:
+                  host: http://172.18.0.3:7700/
 
-                    tasks:
-                      - id: http_download
-                        type: io.kestra.plugin.core.http.Download
-                        uri: https://pokeapi.co/api/v2/pokemon/jigglypuff
+                tasks:
+                  - id: http_download
+                    type: io.kestra.plugin.core.http.Download
+                    uri: https://pokeapi.co/api/v2/pokemon/jigglypuff
 
-                      - id: to_ion
-                        type: io.kestra.plugin.serdes.json.JsonToIon
-                        from: "{{ outputs.http_download.uri }}"
+                  - id: to_ion
+                    type: io.kestra.plugin.serdes.json.JsonToIon
+                    from: "{{ outputs.http_download.uri }}"
 
-                      - id: add
-                        type: io.kestra.plugin.meilisearch.DocumentAdd
-                        index: "pokemon"
-                        url: "{{ vars.host }}"
-                        key: "MASTER_KEY"
-                        data: "{{ outputs.to_ion.uri }}"
+                  - id: add
+                    type: io.kestra.plugin.meilisearch.DocumentAdd
+                    index: "pokemon"
+                    url: "{{ vars.host }}"
+                    key: "MASTER_KEY"
+                    data: "{{ outputs.to_ion.uri }}"
                 """
             }
         )
