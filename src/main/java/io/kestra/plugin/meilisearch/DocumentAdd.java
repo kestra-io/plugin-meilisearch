@@ -38,7 +38,7 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
             code = {
                 """
                     id: meilisearch-add-flow
-                        namespace: company.team
+                    namespace: company.team
 
                     variables:
                       host: http://172.18.0.3:7700/
