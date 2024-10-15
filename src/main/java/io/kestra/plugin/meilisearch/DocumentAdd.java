@@ -56,8 +56,9 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
                     type: io.kestra.plugin.meilisearch.DocumentAdd
                     index: "pokemon"
                     url: "{{ vars.host }}"
-                    key: "MASTER_KEY"
-                    data: "{{ outputs.to_ion.uri }}"
+                    key: MASTER_KEY
+                    data:
+                        fromURI: "{{ outputs.to_ion.uri }}"
                 """
             }
         )
