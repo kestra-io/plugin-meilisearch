@@ -62,7 +62,7 @@ class DocumentAddGetTest {
 
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/documentAdd");
 
-        URI uri = storageInterface.put(null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
+        URI uri = storageInterface.put(null, null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
         Data<Map> data = Data.<Map>builder().fromURI(Property.of(uri)).build();
 
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
