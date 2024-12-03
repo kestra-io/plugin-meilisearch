@@ -45,7 +45,7 @@ class DocumentAddFacetSearchTest {
 
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/facetSearchMovies");
 
-        URI uri = storageInterface.put(null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
+        URI uri = storageInterface.put(null, null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
         Data<Map> data = Data.<Map>builder().fromURI(Property.of(uri)).build();
 
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
@@ -61,7 +61,7 @@ class DocumentAddFacetSearchTest {
 
         assertThat(facetSearchOutput.getTotalHits(), is(1L));
 
-        BufferedReader searchInputStream = new BufferedReader(new InputStreamReader(storageInterface.get(null, facetSearchOutput.getUri())));
+        BufferedReader searchInputStream = new BufferedReader(new InputStreamReader(storageInterface.get(null, null, facetSearchOutput.getUri())));
         List<Map<String, Object>> result = new ArrayList<>();
         FileSerde.reader(searchInputStream, r -> result.add((Map<String, Object>) r));
 
