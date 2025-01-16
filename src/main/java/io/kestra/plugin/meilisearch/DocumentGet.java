@@ -62,8 +62,9 @@ public class DocumentGet extends AbstractMeilisearchConnection implements Runnab
     @Override
     public DocumentGet.Output run(RunContext runContext) throws Exception {
         Client client = this.createClient(runContext);
-        Index searchIndex = client.index(index.as(runContext, String.class));
-        Map<String, Object> output = (Map<String, Object>) searchIndex.getDocument(documentId.as(runContext, String.class), Map.class);
+
+        Index searchIndex = client.index(runContext.render(this.index).as(String.class).orElseThrow());
+        Map<String, Object> output = (Map<String, Object>) searchIndex.getDocument(runContext.render(this.documentId).as(String.class).orElseThrow(), Map.class);
 
         return Output.builder()
             .document(output)

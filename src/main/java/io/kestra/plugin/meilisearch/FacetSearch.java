@@ -76,8 +76,7 @@ public class FacetSearch extends AbstractMeilisearchConnection implements Runnab
     private Property<String> facetName;
 
     @Schema(title = "Facet query", description = "Query that will be used on the specified facetName")
-    @Builder.Default
-    private Property<String> facetQuery = Property.of("");
+    private Property<String> facetQuery;
 
     @Schema(title = "Filters", description = "Additional filters to apply to your facet search")
     @Builder.Default
@@ -86,12 +85,12 @@ public class FacetSearch extends AbstractMeilisearchConnection implements Runnab
     @Override
     public FacetSearch.Output run(RunContext runContext) throws Exception {
         Client client = this.createClient(runContext);
-        Index searchIndex = client.index(index.as(runContext, String.class));
+        Index searchIndex = client.index(runContext.render(this.index).as(String.class).orElseThrow());
 
         FacetSearchRequest fsr = FacetSearchRequest.builder()
-            .facetName(facetName.as(runContext, String.class))
-            .facetQuery(facetQuery.as(runContext, String.class))
-            .filter(filters.asList(runContext, String.class).toArray(new String[]{}))
+            .facetName(runContext.render(this.facetName).as(String.class).orElseThrow())
+            .facetQuery(runContext.render(this.facetQuery).as(String.class).orElse(null))
+            .filter(runContext.render(this.filters).asList(String.class).toArray(new String[]{}))
             .build();
 
         var result = searchIndex.facetSearch(fsr);
