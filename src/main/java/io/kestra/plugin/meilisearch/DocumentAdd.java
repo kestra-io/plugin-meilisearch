@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
 import io.kestra.core.models.annotations.Plugin;
+import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.executions.metrics.Counter;
 import io.kestra.core.models.property.Data;
 import io.kestra.core.models.property.Property;
@@ -68,6 +69,7 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @NotNull
+    @PluginProperty(dynamic = true)
     private Data<Map> data;
 
     @NotNull
@@ -79,7 +81,8 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
         Logger logger = runContext.logger();
 
         Client client = this.createClient(runContext);
-        Index documentIndex = client.index(this.index.as(runContext, String.class));
+        var renderedIndex = runContext.render(this.index).as(String.class).orElseThrow();
+        Index documentIndex = client.index(renderedIndex);
 
         Integer count = this.data.flux(runContext, Map.class, map -> map)
             .map(throwFunction(row -> {
@@ -91,7 +94,7 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
             .orElse(0);
 
         runContext.metric(Counter.of("documentAdded", count));
-        logger.info("Successfully added documents to index " + this.index.as(runContext, String.class));
+        logger.info("Successfully added documents to index {}", renderedIndex);
 
         return null;
     }

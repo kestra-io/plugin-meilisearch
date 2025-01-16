@@ -65,8 +65,8 @@ public class Search extends AbstractMeilisearchConnection implements RunnableTas
     @Override
     public Search.Output run(RunContext runContext) throws Exception {
         Client client = this.createClient(runContext);
-        Index searchIndex = client.index(index.as(runContext, String.class));
-        SearchResult results = searchIndex.search(query.as(runContext, String.class));
+        Index searchIndex = client.index(runContext.render(this.index).as(String.class).orElse(null));
+        SearchResult results = searchIndex.search(runContext.render(this.query).as(String.class).orElse(null));
         List<HashMap<String, Object>> hits = results.getHits();
 
         File tempFile = runContext.workingDir().createTempFile(".ion").toFile();

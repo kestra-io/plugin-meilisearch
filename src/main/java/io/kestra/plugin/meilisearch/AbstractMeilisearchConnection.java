@@ -19,7 +19,9 @@ public abstract class AbstractMeilisearchConnection extends Task implements Meil
     protected Property<String> key;
 
     public Client createClient(RunContext runContext) throws IllegalVariableEvaluationException {
-        Config config = new Config(url.as(runContext, String.class), key.as(runContext, String.class));
+        Config config = new Config(
+            runContext.render(this.url).as(String.class).orElseThrow(),
+            runContext.render(this.key).as(String.class).orElseThrow());
         return new Client(config);
     }
 }
