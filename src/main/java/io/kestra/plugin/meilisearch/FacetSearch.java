@@ -35,9 +35,10 @@ import java.util.*;
     examples = {
         @io.kestra.core.models.annotations.Example(
             title = "Sample facet search",
+            full = true,
             code = {
                 """
-                id: meilisearch-facet-search-flow
+                id: meilisearch_facet_search_flow
                 namespace: company.team
 
                 variables:
@@ -49,13 +50,13 @@ import java.util.*;
                 tasks:
                   - id: facet_search_documents
                     type: io.kestra.plugin.meilisearch.FacetSearch
-                    index: {{ vars.index }}
-                    facetQuery: {{ vars.facetQuery }}
-                    facetName: {{ vars.facetName }}
+                    index: "{{ vars.index }}"
+                    facetQuery: "{{ vars.facetQuery }}"
+                    facetName: "{{ vars.facetName }}"
                     filters:
                       - "rating > 3"
                     url: "{{ vars.host }}"
-                    key: "MASTER_KEY"
+                    key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
 
                   - id: to_json
                     type: io.kestra.plugin.serdes.json.IonToJson

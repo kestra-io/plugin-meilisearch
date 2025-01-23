@@ -36,9 +36,10 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
     examples = {
         @io.kestra.core.models.annotations.Example(
             title = "Add Document to Meilisearch",
+            full = true,
             code = {
                 """
-                id: meilisearch-add-flow
+                id: meilisearch_add_flow
                 namespace: company.team
 
                 variables:
@@ -57,7 +58,7 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
                     type: io.kestra.plugin.meilisearch.DocumentAdd
                     index: "pokemon"
                     url: "{{ vars.host }}"
-                    key: MASTER_KEY
+                    key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
                     data:
                         fromURI: "{{ outputs.to_ion.uri }}"
                 """
