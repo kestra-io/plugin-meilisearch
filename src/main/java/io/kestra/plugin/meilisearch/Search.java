@@ -29,9 +29,10 @@ import java.util.*;
 @Plugin(
     examples = {
         @io.kestra.core.models.annotations.Example(
+            full = true,
             code = {
                 """
-                id: meilisearch-search-flow
+                id: meilisearch_search_flow
                 namespace: company.team
 
                 variables:
@@ -42,10 +43,10 @@ import java.util.*;
                 tasks:
                   - id: search_documents
                     type: io.kestra.plugin.meilisearch.Search
-                    index: {{ vars.index }}
-                    query: {{ vars.query }}
+                    index: "{{ vars.index }}"
+                    query: "{{ vars.query }}"
                     url: "{{ vars.host }}"
-                    key: "MASTER_KEY"
+                    key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
 
                   - id: to_json
                     type: io.kestra.plugin.serdes.json.IonToJson

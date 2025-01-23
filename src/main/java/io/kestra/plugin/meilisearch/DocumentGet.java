@@ -28,9 +28,10 @@ import java.util.Map;
     examples = {
         @io.kestra.core.models.annotations.Example(
             title = "Get Document from Meilisearch",
+            full = true,
             code = {
                 """
-                id: meilisearch-get-flow
+                id: meilisearch_get_flow
                 namespace: company.team
 
                 variables:
@@ -41,10 +42,10 @@ import java.util.Map;
                 tasks:
                   - id: get_document
                     type: io.kestra.plugin.meilisearch.DocumentGet
-                    index: {{ vars.index }}
-                    documentId: {{ vars.id }}
+                    index: "{{ vars.index }}"
+                    documentId: "{{ vars.id }}"
                     url: "{{ vars.host }}"
-                    key: "MASTER_KEY"
+                    key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
                 """
             }
         )
