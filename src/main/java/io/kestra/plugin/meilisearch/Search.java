@@ -23,8 +23,8 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "Search Document",
-    description = "Perform a basic search query on a Meilisearch database with specific query and return the results in an .ion file"
+    title = "Search for a document in Meilisearch.",
+    description = "Perform a basic search query on a Meilisearch database and return the results in an ION file."
 )
 @Plugin(
     examples = {
