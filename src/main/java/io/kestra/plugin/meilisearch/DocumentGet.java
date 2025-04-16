@@ -21,8 +21,8 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "Get Document",
-    description = "Get a json [document](https://www.meilisearch.com/docs/reference/api/documents#get-documents-with-get) from Meilisearch using id and index"
+    title = "Get a document from Meilisearch.",
+    description = "Get a json [document](https://www.meilisearch.com/docs/reference/api/documents#get-documents-with-get) from Meilisearch using id and index."
 )
 @Plugin(
     examples = {

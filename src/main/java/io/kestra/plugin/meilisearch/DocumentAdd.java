@@ -29,8 +29,8 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "Add Document",
-    description = "Add one or multiple [documents](https://www.meilisearch.com/docs/reference/api/documents#add-or-replace-documents) to a Meilisearch DB"
+    title = "Add a document to Meilisearch.",
+    description = "Add one or multiple [documents](https://www.meilisearch.com/docs/reference/api/documents#add-or-replace-documents) to a Meilisearch DB."
 )
 @Plugin(
     examples = {

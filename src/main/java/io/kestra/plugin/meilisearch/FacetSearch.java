@@ -25,7 +25,7 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "FacetSearch",
+    title = "Conduct a FacetSearch in Meilisearch.",
     description = """
         Perform a facet [search](https://www.meilisearch.com/docs/reference/api/facet_search) from a Meilisearch DB.
         WARNING: make sure to set the [filterable attributes](https://www.meilisearch.com/docs/learn/filtering_and_sorting/search_with_facet_filters#configure-facet-index-settings) before.
