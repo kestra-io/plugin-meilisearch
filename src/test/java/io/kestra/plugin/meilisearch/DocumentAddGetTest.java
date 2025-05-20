@@ -7,6 +7,7 @@ import io.kestra.core.models.property.Property;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.kestra.core.storages.StorageInterface;
+import io.kestra.core.tenant.TenantService;
 import io.kestra.core.utils.IdUtils;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
@@ -62,7 +63,7 @@ class DocumentAddGetTest {
 
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/documentAdd");
 
-        URI uri = storageInterface.put(null, null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
+        URI uri = storageInterface.put(TenantService.MAIN_TENANT, null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
         Data<Map> data = Data.<Map>builder().fromURI(Property.of(uri)).build();
 
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
