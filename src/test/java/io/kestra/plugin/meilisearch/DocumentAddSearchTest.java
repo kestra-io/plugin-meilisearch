@@ -59,7 +59,7 @@ class DocumentAddSearchTest {
         assertThat(searchOutput.getTotalHits(), is(2L));
         assertThat(searchOutput.getUri(), notNullValue());
 
-        BufferedReader searchInputStream = new BufferedReader(new InputStreamReader(storageInterface.get(null, null, searchOutput.getUri())));
+        BufferedReader searchInputStream = new BufferedReader(new InputStreamReader(storageInterface.get(TenantService.MAIN_TENANT, null, searchOutput.getUri())));
         List<Map<String, Object>> result = new ArrayList<>();
         FileSerde.reader(searchInputStream, r -> result.add((Map<String, Object>) r));
 

@@ -62,7 +62,7 @@ class DocumentAddFacetSearchTest {
 
         assertThat(facetSearchOutput.getTotalHits(), is(1L));
 
-        BufferedReader searchInputStream = new BufferedReader(new InputStreamReader(storageInterface.get(null, null, facetSearchOutput.getUri())));
+        BufferedReader searchInputStream = new BufferedReader(new InputStreamReader(storageInterface.get(TenantService.MAIN_TENANT, null, facetSearchOutput.getUri())));
         List<Map<String, Object>> result = new ArrayList<>();
         FileSerde.reader(searchInputStream, r -> result.add((Map<String, Object>) r));
 
