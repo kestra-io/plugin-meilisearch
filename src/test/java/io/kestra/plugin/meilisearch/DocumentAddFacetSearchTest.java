@@ -47,7 +47,7 @@ class DocumentAddFacetSearchTest {
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/facetSearchMovies");
 
         URI uri = storageInterface.put(TenantService.MAIN_TENANT, null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
-        Data<Map> data = Data.<Map>builder().fromURI(Property.of(uri)).build();
+        Data<Map> data = Data.<Map>builder().fromURI(Property.ofValue(uri)).build();
 
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
 

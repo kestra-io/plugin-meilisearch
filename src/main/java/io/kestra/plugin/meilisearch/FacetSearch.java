@@ -81,7 +81,7 @@ public class FacetSearch extends AbstractMeilisearchConnection implements Runnab
 
     @Schema(title = "Filters", description = "Additional filters to apply to your facet search")
     @Builder.Default
-    private Property<List<String>> filters = Property.of(new ArrayList<>());
+    private Property<List<String>> filters = Property.ofValue(new ArrayList<>());
 
     @Override
     public FacetSearch.Output run(RunContext runContext) throws Exception {
