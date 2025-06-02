@@ -7,8 +7,8 @@ import java.util.List;
 public class TestUtils {
 
 
-    public static final Property<String> URL = Property.of("http://localhost:7700");
-    public static final Property<String> MASTER_KEY = Property.of("MASTER_KEY");
+    public static final Property<String> URL = Property.ofValue("http://localhost:7700");
+    public static final Property<String> MASTER_KEY = Property.ofValue("MASTER_KEY");
 
     public static DocumentAdd createDocumentAdd(Object from, String index) {
         return DocumentAdd.builder()
