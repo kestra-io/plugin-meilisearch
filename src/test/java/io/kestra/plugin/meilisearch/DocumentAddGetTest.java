@@ -37,7 +37,7 @@ class DocumentAddGetTest {
             "title", "Notebook",
             "genres", new String[]{"Romance","Drama"}
         );
-        Data<Map> data = Data.<Map>builder().fromMap(Property.of(document)).build();
+        Data<Map> data = Data.<Map>builder().fromMap(Property.ofValue(document)).build();
 
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
         DocumentAdd documentAdd = TestUtils.createDocumentAdd(data, index);
@@ -64,7 +64,7 @@ class DocumentAddGetTest {
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/documentAdd");
 
         URI uri = storageInterface.put(TenantService.MAIN_TENANT, null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
-        Data<Map> data = Data.<Map>builder().fromURI(Property.of(uri)).build();
+        Data<Map> data = Data.<Map>builder().fromURI(Property.ofValue(uri)).build();
 
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
         DocumentAdd documentAdd = TestUtils.createDocumentAdd(data, index);
