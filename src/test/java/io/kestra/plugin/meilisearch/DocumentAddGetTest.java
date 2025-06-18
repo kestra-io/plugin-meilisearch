@@ -2,8 +2,6 @@ package io.kestra.plugin.meilisearch;
 
 import com.google.common.collect.ImmutableMap;
 import io.kestra.core.junit.annotations.KestraTest;
-import io.kestra.core.models.property.Data;
-import io.kestra.core.models.property.Property;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.kestra.core.storages.StorageInterface;
@@ -37,10 +35,8 @@ class DocumentAddGetTest {
             "title", "Notebook",
             "genres", new String[]{"Romance","Drama"}
         );
-        Data<Map> data = Data.<Map>builder().fromMap(Property.of(document)).build();
-
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
-        DocumentAdd documentAdd = TestUtils.createDocumentAdd(data, index);
+        DocumentAdd documentAdd = TestUtils.createDocumentAdd(document, index);
 
         documentAdd.run(addRunContext);
 
@@ -52,7 +48,7 @@ class DocumentAddGetTest {
 
         DocumentGet.Output getOutput = documentGet.run(getRunContext);
 
-        Map<String, Object> doc = (Map<String, Object>) getOutput.getDocument();
+        Map<String, Object> doc = getOutput.getDocument();
         assertThat(doc.get("id"), is(id));
     }
 
@@ -64,10 +60,9 @@ class DocumentAddGetTest {
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/documentAdd");
 
         URI uri = storageInterface.put(TenantService.MAIN_TENANT, null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
-        Data<Map> data = Data.<Map>builder().fromURI(Property.of(uri)).build();
 
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
-        DocumentAdd documentAdd = TestUtils.createDocumentAdd(data, index);
+        DocumentAdd documentAdd = TestUtils.createDocumentAdd(uri.toString(), index);
 
         documentAdd.run(addRunContext);
 
@@ -79,7 +74,7 @@ class DocumentAddGetTest {
 
         DocumentGet.Output getOutput = documentGet.run(getRunContext);
 
-        Map<String, Object> doc = (Map<String, Object>) getOutput.getDocument();
+        Map<String, Object> doc = getOutput.getDocument();
         assertThat(doc.get("id"), is(id));
         assertThat(doc.get("name"), is("Bryan"));
     }

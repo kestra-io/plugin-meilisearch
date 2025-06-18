@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
 import io.kestra.core.models.annotations.Plugin;
-import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.executions.metrics.Counter;
 import io.kestra.core.models.property.Data;
 import io.kestra.core.models.property.Property;
@@ -17,8 +16,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
-
-import java.util.Map;
 
 import static io.kestra.core.utils.Rethrow.throwFunction;
 
@@ -59,19 +56,17 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
                     index: "pokemon"
                     url: "{{ vars.host }}"
                     key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
-                    data:
-                        fromURI: "{{ outputs.to_ion.uri }}"
+                    from: "{{ outputs.to_ion.uri }}"
                 """
             }
         )
     }
 )
-public class DocumentAdd extends AbstractMeilisearchConnection implements RunnableTask<VoidOutput> {
+public class DocumentAdd extends AbstractMeilisearchConnection implements RunnableTask<VoidOutput>, Data.From {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @NotNull
-    @PluginProperty(dynamic = true)
-    private Data<Map> data;
+    private Object from;
 
     @NotNull
     @Schema(title = "Index", description = "Index of the collection you want to add documents to")
@@ -85,9 +80,9 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
         var renderedIndex = runContext.render(this.index).as(String.class).orElseThrow();
         Index documentIndex = client.index(renderedIndex);
 
-        Integer count = this.data.flux(runContext, Map.class, map -> map)
+        Integer count = Data.from(from).read(runContext)
             .map(throwFunction(row -> {
-                documentIndex.addDocuments(MAPPER.writeValueAsString((Map<String,Object>) row));
+                documentIndex.addDocuments(MAPPER.writeValueAsString(row));
                 return 1;
             }))
             .reduce(Integer::sum)
