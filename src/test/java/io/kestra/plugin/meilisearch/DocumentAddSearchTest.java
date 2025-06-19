@@ -2,8 +2,6 @@ package io.kestra.plugin.meilisearch;
 
 import com.google.common.collect.ImmutableMap;
 import io.kestra.core.junit.annotations.KestraTest;
-import io.kestra.core.models.property.Data;
-import io.kestra.core.models.property.Property;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.kestra.core.serializers.FileSerde;
@@ -40,11 +38,10 @@ class DocumentAddSearchTest {
 
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("examples/basicSearchName");
         URI uri = storageInterface.put(TenantService.MAIN_TENANT, null, URI.create("/" + IdUtils.create() + ".ion"), inputStream);
-        Data<Map> data = Data.<Map>builder().fromURI(Property.of(uri)).build();
 
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
 
-        DocumentAdd documentAdd = TestUtils.createDocumentAdd(data, SEARCH_INDEX);
+        DocumentAdd documentAdd = TestUtils.createDocumentAdd(uri.toString(), SEARCH_INDEX);
 
         documentAdd.run(addRunContext);
 

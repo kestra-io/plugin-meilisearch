@@ -1,10 +1,8 @@
 package io.kestra.plugin.meilisearch;
 
-import io.kestra.core.models.property.Data;
 import io.kestra.core.models.property.Property;
 
 import java.util.List;
-import java.util.Map;
 
 public class TestUtils {
 
@@ -12,10 +10,10 @@ public class TestUtils {
     public static final Property<String> URL = Property.of("http://localhost:7700");
     public static final Property<String> MASTER_KEY = Property.of("MASTER_KEY");
 
-    public static DocumentAdd createDocumentAdd(Data<Map> data, String index) {
+    public static DocumentAdd createDocumentAdd(Object from, String index) {
         return DocumentAdd.builder()
-            .data(data)
-            .index(Property.of(index))
+            .from(from)
+            .index(Property.ofValue(index))
             .url(URL)
             .key(MASTER_KEY)
             .build();
@@ -23,8 +21,8 @@ public class TestUtils {
 
     public static DocumentGet createDocumentGet(String id, String index) {
         return DocumentGet.builder()
-            .documentId(Property.of(id))
-            .index(Property.of(index))
+            .documentId(Property.ofValue(id))
+            .index(Property.ofValue(index))
             .url(URL)
             .key(MASTER_KEY)
             .build();
@@ -32,8 +30,8 @@ public class TestUtils {
 
     public static Search createSearch(String pattern, String index) {
         return Search.builder()
-            .query(Property.of(pattern))
-            .index(Property.of(index))
+            .query(Property.ofValue(pattern))
+            .index(Property.ofValue(index))
             .url(URL)
             .key(MASTER_KEY)
             .build();
@@ -41,10 +39,10 @@ public class TestUtils {
 
     public static FacetSearch createFacetSearch(String facetName, String facetQuery, List<String> filters, String index) {
         return FacetSearch.builder()
-            .facetName(Property.of(facetName))
-            .facetQuery(Property.of(facetQuery))
-            .filters(Property.of(filters))
-            .index(Property.of(index))
+            .facetName(Property.ofValue(facetName))
+            .facetQuery(Property.ofValue(facetQuery))
+            .filters(Property.ofValue(filters))
+            .index(Property.ofValue(index))
             .url(URL)
             .key(MASTER_KEY)
             .build();
