@@ -3,6 +3,8 @@ package io.kestra.plugin.meilisearch;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
+import io.kestra.core.models.annotations.Example;
+import io.kestra.core.models.annotations.Metric;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.executions.metrics.Counter;
 import io.kestra.core.models.property.Data;
@@ -12,7 +14,10 @@ import io.kestra.core.models.tasks.VoidOutput;
 import io.kestra.core.runners.RunContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -31,34 +36,41 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
 )
 @Plugin(
     examples = {
-        @io.kestra.core.models.annotations.Example(
+        @Example(
             title = "Add Document to Meilisearch",
             full = true,
             code = {
                 """
-                id: meilisearch_add_flow
-                namespace: company.team
+                    id: meilisearch_add_flow
+                    namespace: company.team
 
-                variables:
-                  host: http://172.18.0.3:7700/
+                    variables:
+                      host: http://172.18.0.3:7700/
 
-                tasks:
-                  - id: http_download
-                    type: io.kestra.plugin.core.http.Download
-                    uri: https://pokeapi.co/api/v2/pokemon/jigglypuff
+                    tasks:
+                      - id: http_download
+                        type: io.kestra.plugin.core.http.Download
+                        uri: https://pokeapi.co/api/v2/pokemon/jigglypuff
 
-                  - id: to_ion
-                    type: io.kestra.plugin.serdes.json.JsonToIon
-                    from: "{{ outputs.http_download.uri }}"
+                      - id: to_ion
+                        type: io.kestra.plugin.serdes.json.JsonToIon
+                        from: "{{ outputs.http_download.uri }}"
 
-                  - id: add
-                    type: io.kestra.plugin.meilisearch.DocumentAdd
-                    index: "pokemon"
-                    url: "{{ vars.host }}"
-                    key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
-                    from: "{{ outputs.to_ion.uri }}"
-                """
+                      - id: add
+                        type: io.kestra.plugin.meilisearch.DocumentAdd
+                        index: "pokemon"
+                        url: "{{ vars.host }}"
+                        key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
+                        from: "{{ outputs.to_ion.uri }}"
+                    """
             }
+        )
+    },
+    metrics = {
+        @Metric(
+            name = "documentAdded",
+            description = "The number of documents added to Meilisearch",
+            type = Counter.TYPE
         )
     }
 )
