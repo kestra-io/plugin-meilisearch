@@ -19,12 +19,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 
 import static io.kestra.core.utils.Rethrow.throwFunction;
 
-@Slf4j
 @SuperBuilder
 @ToString
 @EqualsAndHashCode
