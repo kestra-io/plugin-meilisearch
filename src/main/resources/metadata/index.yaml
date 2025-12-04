@@ -1,8 +1,8 @@
 group: io.kestra.plugin.meilisearch
 name: "meilisearch"
 title: "Meilisearch"
-description: "This sub-group of plugins contains tasks for using Meilisearch collection database. Meilisearch is a RESTful search API. It aims to be a ready-to-go solution for everyone who wants a fast and relevant search experience for their end-users"
-body: ""
+description: "Tasks that load data into and query Meilisearch indexes."
+body: "Provide the Meilisearch host and API key to create or update indexes, push documents, configure settings, and search with filters, returning JSON results for downstream processing."
 videos: []
 createdBy: "Kestra Core Team"
 managedBy: "Kestra Core Team"
