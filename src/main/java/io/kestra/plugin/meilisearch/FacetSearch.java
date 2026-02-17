@@ -25,10 +25,9 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "Conduct a FacetSearch in Meilisearch.",
+    title = "Search facets in Meilisearch",
     description = """
-        Perform a facet [search](https://www.meilisearch.com/docs/reference/api/facet_search) from a Meilisearch DB.
-        WARNING: make sure to set the [filterable attributes](https://www.meilisearch.com/docs/learn/filtering_and_sorting/search_with_facet_filters#configure-facet-index-settings) before.
+        Runs a facet search on a Meilisearch index and writes the facet hits to an .ion file in Kestra storage. Facet attributes must be configured as filterable in the index settings; filters default to none.
         """
 )
 @Plugin(
@@ -60,7 +59,7 @@ import java.util.*;
 
                   - id: to_json
                     type: io.kestra.plugin.serdes.json.IonToJson
-                    from: "{{ outputs.search_documents.uri }}"
+                    from: "{{ outputs.facet_search_documents.uri }}"
                 """
             }
         )
@@ -68,18 +67,18 @@ import java.util.*;
 )
 public class FacetSearch extends AbstractMeilisearchConnection implements RunnableTask<FacetSearch.Output> {
 
-    @Schema(title = "Index", description = "Index of the collection you want to search in")
+    @Schema(title = "Index", description = "Name of the Meilisearch index to search.")
     @NotNull
     private Property<String> index;
 
-    @Schema(title = "Facet name", description = "Name of the facet you wan to perform a search on (ex: facetName: \"genre\" on a film collection)")
+    @Schema(title = "Facet name", description = "Facet attribute configured as filterable (e.g., facetName \"genre\" on a film index).")
     @NotNull
     private Property<String> facetName;
 
-    @Schema(title = "Facet query", description = "Query that will be used on the specified facetName")
+    @Schema(title = "Facet query", description = "Query string applied to the specified facet; optional.")
     private Property<String> facetQuery;
 
-    @Schema(title = "Filters", description = "Additional filters to apply to your facet search")
+    @Schema(title = "Filters", description = "List of Meilisearch filters applied to the facet search; defaults to an empty list.")
     @Builder.Default
     private Property<List<String>> filters = Property.ofValue(new ArrayList<>());
 
@@ -111,9 +110,9 @@ public class FacetSearch extends AbstractMeilisearchConnection implements Runnab
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
-        @Schema(title = "URI to output", description = "Results URI to an Amazon .ion file")
+        @Schema(title = "Output URI", description = "URI in Kestra storage to the .ion file with facet search results.")
         private final URI uri;
-        @Schema(title = "Hits number", description = "Number of items hit by the facet search request")
+        @Schema(title = "Total hits", description = "Number of facet hits returned by the request.")
         private final Long totalHits;
     }
 }

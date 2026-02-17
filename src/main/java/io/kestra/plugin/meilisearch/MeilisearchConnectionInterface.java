@@ -7,13 +7,13 @@ import jakarta.validation.constraints.NotNull;
 public interface MeilisearchConnectionInterface {
     @NotNull
     @Schema(
-        title = "Meilisearch connection URL."
+        title = "Meilisearch connection URL"
     )
     Property<String> getUrl();
 
     @NotNull
     @Schema(
-        title = "Meilisearch connection key."
+        title = "Meilisearch connection key"
     )
     Property<String> getKey();
 }

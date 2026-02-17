@@ -29,8 +29,8 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "Add a document to Meilisearch.",
-    description = "Add one or multiple [documents](https://www.meilisearch.com/docs/reference/api/documents#add-or-replace-documents) to a Meilisearch DB."
+    title = "Add documents to Meilisearch",
+    description = "Adds one or multiple documents to a Meilisearch index using the add-or-replace API. Documents are read from the `from` source, rendered by Kestra, and sent with Meilisearch defaults for primary key handling; requires index URL and API key."
 )
 @Plugin(
     examples = {
@@ -75,11 +75,12 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
 public class DocumentAdd extends AbstractMeilisearchConnection implements RunnableTask<VoidOutput>, Data.From {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    @Schema(title = "Source", description = "Document source handled by `Data.from`: URI, inline data, or previous task output.")
     @NotNull
     private Object from;
 
     @NotNull
-    @Schema(title = "Index", description = "Index of the collection you want to add documents to")
+    @Schema(title = "Index", description = "Name of the Meilisearch index to add documents to.")
     private Property<String> index;
 
     @Override

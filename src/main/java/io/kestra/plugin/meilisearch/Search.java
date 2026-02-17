@@ -23,8 +23,8 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "Search for a document in Meilisearch.",
-    description = "Perform a basic search query on a Meilisearch database and return the results in an ION file."
+    title = "Search documents in Meilisearch",
+    description = "Runs a full-text search on a Meilisearch index and writes the hits to an .ion file in Kestra storage. Uses Meilisearch defaults for pagination and requires a URL and API key with search permission."
 )
 @Plugin(
     examples = {
@@ -58,9 +58,9 @@ import java.util.*;
 )
 public class Search extends AbstractMeilisearchConnection implements RunnableTask<Search.Output> {
 
-    @Schema(title = "Search Query", description = "Query performed to search on a specific collection")
+    @Schema(title = "Search query", description = "Full-text query string sent to Meilisearch; templated before execution.")
     private Property<String> query;
-    @Schema(title = "Index", description = "Index of the collection you want to perform a search on")
+    @Schema(title = "Index", description = "Name of the Meilisearch index to search.")
     private Property<String> index;
 
     @Override
@@ -86,9 +86,9 @@ public class Search extends AbstractMeilisearchConnection implements RunnableTas
     @Builder
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
-        @Schema(title = "URI to output", description = "Results URI to an Amazon .ion file")
+        @Schema(title = "Output URI", description = "URI in Kestra storage to the .ion file containing search hits.")
         private final URI uri;
-        @Schema(title = "Hits number", description = "Number of items hit by the search request")
+        @Schema(title = "Total hits", description = "Number of documents written from the search response.")
         private final Long totalHits;
     }
 }
