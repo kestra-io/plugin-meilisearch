@@ -22,7 +22,7 @@ import java.util.Map;
 @NoArgsConstructor
 @Schema(
     title = "Fetch document from Meilisearch",
-    description = "Retrieves a JSON document from a Meilisearch index by ID using the get document API. Requires index URL and API key; returns the raw document map."
+    description = "Retrieves a [JSON document](https://www.meilisearch.com/docs/reference/api/documents#get-documents-with-get) from a Meilisearch index by ID using the get document API. Requires index URL and API key; returns the raw document map."
 )
 @Plugin(
     examples = {

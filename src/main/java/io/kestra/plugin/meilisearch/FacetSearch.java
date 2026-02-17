@@ -27,7 +27,7 @@ import java.util.*;
 @Schema(
     title = "Search facets in Meilisearch",
     description = """
-        Runs a facet search on a Meilisearch index and writes the facet hits to an .ion file in Kestra storage. Facet attributes must be configured as filterable in the index settings; filters default to none.
+        Runs a facet [search](https://www.meilisearch.com/docs/reference/api/facet_search) on a Meilisearch index and writes the facet hits to an .ion file in Kestra storage. Facet attributes must be configured as [filterable](https://www.meilisearch.com/docs/learn/filtering_and_sorting/search_with_facet_filters#configure-facet-index-settings) in the index settings; filters default to none.
         """
 )
 @Plugin(

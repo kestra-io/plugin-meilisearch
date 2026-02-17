@@ -30,7 +30,7 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
 @NoArgsConstructor
 @Schema(
     title = "Add documents to Meilisearch",
-    description = "Adds one or multiple documents to a Meilisearch index using the add-or-replace API. Documents are read from the `from` source, rendered by Kestra, and sent with Meilisearch defaults for primary key handling; requires index URL and API key."
+    description = "Adds one or multiple documents to a Meilisearch index using the [add-or-replace API](https://www.meilisearch.com/docs/reference/api/documents#add-or-replace-documents). Documents are read from the `from` source, rendered by Kestra, and sent with Meilisearch defaults for primary key handling; requires index URL and API key."
 )
 @Plugin(
     examples = {
