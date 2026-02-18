@@ -75,7 +75,6 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
 public class DocumentAdd extends AbstractMeilisearchConnection implements RunnableTask<VoidOutput>, Data.From {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    @Schema(title = "Source", description = "Document source handled by `Data.from`: URI, inline data, or previous task output.")
     @NotNull
     private Object from;
 
