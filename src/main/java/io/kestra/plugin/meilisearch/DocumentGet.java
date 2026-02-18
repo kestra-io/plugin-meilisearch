@@ -21,8 +21,8 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor
 @Schema(
-    title = "Get a document from Meilisearch.",
-    description = "Get a json [document](https://www.meilisearch.com/docs/reference/api/documents#get-documents-with-get) from Meilisearch using id and index."
+    title = "Fetch document from Meilisearch",
+    description = "Retrieves a [JSON document](https://www.meilisearch.com/docs/reference/api/documents#get-documents-with-get) from a Meilisearch index by ID using the get document API. Requires index URL and API key; returns the raw document map."
 )
 @Plugin(
     examples = {
@@ -53,11 +53,11 @@ import java.util.Map;
 )
 public class DocumentGet extends AbstractMeilisearchConnection implements RunnableTask<DocumentGet.Output> {
     @NotNull
-    @Schema(title = "Document ID")
+    @Schema(title = "Document ID", description = "Identifier of the document to retrieve; templated before the request.")
     private Property<String> documentId;
 
     @NotNull
-    @Schema(title = "Index", description = "Index of the collections you want to retrieve your document from")
+    @Schema(title = "Index", description = "Name of the Meilisearch index containing the document.")
     private Property<String> index;
 
     @Override
@@ -76,8 +76,8 @@ public class DocumentGet extends AbstractMeilisearchConnection implements Runnab
     @Getter
     public static class Output implements io.kestra.core.models.tasks.Output {
         @Schema(
-            title = "JSON Document",
-            description = "Returned document as a JSON object"
+            title = "JSON document",
+            description = "Document returned by Meilisearch as a JSON object."
         )
         private final Map<String, Object> document;
     }
