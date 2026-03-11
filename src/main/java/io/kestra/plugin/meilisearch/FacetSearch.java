@@ -1,23 +1,25 @@
 package io.kestra.plugin.meilisearch;
 
+import java.io.*;
+import java.net.URI;
+import java.util.*;
+
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.FacetSearchRequest;
 import com.meilisearch.sdk.Index;
 import com.meilisearch.sdk.model.FacetSearchable;
+
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.serializers.FileSerde;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import reactor.core.publisher.Flux;
-
-import java.io.*;
-import java.net.URI;
-import java.util.*;
 
 @SuperBuilder
 @ToString
@@ -37,30 +39,30 @@ import java.util.*;
             full = true,
             code = {
                 """
-                id: meilisearch_facet_search_flow
-                namespace: company.team
+                    id: meilisearch_facet_search_flow
+                    namespace: company.team
 
-                variables:
-                  index: movies
-                  facetQuery: fiction
-                  facetName: genre
-                  host: http://172.18.0.3:7700/
+                    variables:
+                      index: movies
+                      facetQuery: fiction
+                      facetName: genre
+                      host: http://172.18.0.3:7700/
 
-                tasks:
-                  - id: facet_search_documents
-                    type: io.kestra.plugin.meilisearch.FacetSearch
-                    index: "{{ vars.index }}"
-                    facetQuery: "{{ vars.facetQuery }}"
-                    facetName: "{{ vars.facetName }}"
-                    filters:
-                      - "rating > 3"
-                    url: "{{ vars.host }}"
-                    key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
+                    tasks:
+                      - id: facet_search_documents
+                        type: io.kestra.plugin.meilisearch.FacetSearch
+                        index: "{{ vars.index }}"
+                        facetQuery: "{{ vars.facetQuery }}"
+                        facetName: "{{ vars.facetName }}"
+                        filters:
+                          - "rating > 3"
+                        url: "{{ vars.host }}"
+                        key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
 
-                  - id: to_json
-                    type: io.kestra.plugin.serdes.json.IonToJson
-                    from: "{{ outputs.facet_search_documents.uri }}"
-                """
+                      - id: to_json
+                        type: io.kestra.plugin.serdes.json.IonToJson
+                        from: "{{ outputs.facet_search_documents.uri }}"
+                    """
             }
         )
     }
@@ -90,7 +92,7 @@ public class FacetSearch extends AbstractMeilisearchConnection implements Runnab
         FacetSearchRequest fsr = FacetSearchRequest.builder()
             .facetName(runContext.render(this.facetName).as(String.class).orElseThrow())
             .facetQuery(runContext.render(this.facetQuery).as(String.class).orElse(null))
-            .filter(runContext.render(this.filters).asList(String.class).toArray(new String[]{}))
+            .filter(runContext.render(this.filters).asList(String.class).toArray(new String[] {}))
             .build();
 
         var result = searchIndex.facetSearch(fsr);

@@ -1,19 +1,19 @@
 package io.kestra.plugin.meilisearch;
 
+import java.util.Map;
+
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
+
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import java.util.Map;
-
-
 
 @SuperBuilder
 @ToString
@@ -31,22 +31,22 @@ import java.util.Map;
             full = true,
             code = {
                 """
-                id: meilisearch_get_flow
-                namespace: company.team
+                    id: meilisearch_get_flow
+                    namespace: company.team
 
-                variables:
-                  id: a123
-                  index: pokemons
-                  host: http://172.18.0.3:7700/
+                    variables:
+                      id: a123
+                      index: pokemons
+                      host: http://172.18.0.3:7700/
 
-                tasks:
-                  - id: get_document
-                    type: io.kestra.plugin.meilisearch.DocumentGet
-                    index: "{{ vars.index }}"
-                    documentId: "{{ vars.id }}"
-                    url: "{{ vars.host }}"
-                    key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
-                """
+                    tasks:
+                      - id: get_document
+                        type: io.kestra.plugin.meilisearch.DocumentGet
+                        index: "{{ vars.index }}"
+                        documentId: "{{ vars.id }}"
+                        url: "{{ vars.host }}"
+                        key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
+                    """
             }
         )
     }

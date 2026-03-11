@@ -1,20 +1,5 @@
 package io.kestra.plugin.meilisearch;
 
-import com.google.common.collect.ImmutableMap;
-import com.meilisearch.sdk.Client;
-import com.meilisearch.sdk.Config;
-import com.meilisearch.sdk.model.Settings;
-import io.kestra.core.junit.annotations.KestraTest;
-import io.kestra.core.runners.RunContext;
-import io.kestra.core.runners.RunContextFactory;
-import io.kestra.core.serializers.FileSerde;
-import io.kestra.core.storages.StorageInterface;
-import io.kestra.core.tenant.TenantService;
-import io.kestra.core.utils.IdUtils;
-import jakarta.inject.Inject;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,6 +7,24 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import com.google.common.collect.ImmutableMap;
+import com.meilisearch.sdk.Client;
+import com.meilisearch.sdk.Config;
+import com.meilisearch.sdk.model.Settings;
+
+import io.kestra.core.junit.annotations.KestraTest;
+import io.kestra.core.runners.RunContext;
+import io.kestra.core.runners.RunContextFactory;
+import io.kestra.core.serializers.FileSerde;
+import io.kestra.core.storages.StorageInterface;
+import io.kestra.core.tenant.TenantService;
+import io.kestra.core.utils.IdUtils;
+
+import jakarta.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -87,7 +90,7 @@ class DocumentAddFacetSearchTest {
     @BeforeAll
     static void setupFilterableFields() {
         Settings settings = new Settings();
-        settings.setFilterableAttributes(new String[] {"genres", "rating"});
+        settings.setFilterableAttributes(new String[] { "genres", "rating" });
 
         var meilisearchClient = new Client(new Config("http://localhost:7700", "MASTER_KEY"));
         meilisearchClient.index(FACET_SEARCH_INDEX).updateSettings(settings);

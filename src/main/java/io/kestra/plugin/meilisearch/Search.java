@@ -1,21 +1,23 @@
 package io.kestra.plugin.meilisearch;
 
+import java.io.*;
+import java.net.URI;
+import java.util.*;
+
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
 import com.meilisearch.sdk.model.SearchResult;
+
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.serializers.FileSerde;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import reactor.core.publisher.Flux;
-
-import java.io.*;
-import java.net.URI;
-import java.util.*;
 
 @SuperBuilder
 @ToString
@@ -32,26 +34,26 @@ import java.util.*;
             full = true,
             code = {
                 """
-                id: meilisearch_search_flow
-                namespace: company.team
+                    id: meilisearch_search_flow
+                    namespace: company.team
 
-                variables:
-                  index: movies
-                  query: "Lord of the Rings"
-                  host: http://172.18.0.3:7700/
+                    variables:
+                      index: movies
+                      query: "Lord of the Rings"
+                      host: http://172.18.0.3:7700/
 
-                tasks:
-                  - id: search_documents
-                    type: io.kestra.plugin.meilisearch.Search
-                    index: "{{ vars.index }}"
-                    query: "{{ vars.query }}"
-                    url: "{{ vars.host }}"
-                    key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
+                    tasks:
+                      - id: search_documents
+                        type: io.kestra.plugin.meilisearch.Search
+                        index: "{{ vars.index }}"
+                        query: "{{ vars.query }}"
+                        url: "{{ vars.host }}"
+                        key: "{{ secret('MEILISEARCH_MASTER_KEY') }}"
 
-                  - id: to_json
-                    type: io.kestra.plugin.serdes.json.IonToJson
-                    from: "{{ outputs.search_documents.uri }}"
-                """
+                      - id: to_json
+                        type: io.kestra.plugin.serdes.json.IonToJson
+                        from: "{{ outputs.search_documents.uri }}"
+                    """
             }
         )
     }

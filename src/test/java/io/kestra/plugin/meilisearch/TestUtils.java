@@ -1,11 +1,10 @@
 package io.kestra.plugin.meilisearch;
 
-import io.kestra.core.models.property.Property;
-
 import java.util.List;
 
-public class TestUtils {
+import io.kestra.core.models.property.Property;
 
+public class TestUtils {
 
     public static final Property<String> URL = Property.ofValue("http://localhost:7700");
     public static final Property<String> MASTER_KEY = Property.ofValue("MASTER_KEY");

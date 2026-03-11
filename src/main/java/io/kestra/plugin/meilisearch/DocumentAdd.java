@@ -1,8 +1,11 @@
 package io.kestra.plugin.meilisearch;
 
+import org.slf4j.Logger;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
+
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Metric;
 import io.kestra.core.models.annotations.Plugin;
@@ -12,6 +15,7 @@ import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.models.tasks.VoidOutput;
 import io.kestra.core.runners.RunContext;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
@@ -19,7 +23,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-import org.slf4j.Logger;
 
 import static io.kestra.core.utils.Rethrow.throwFunction;
 
@@ -91,7 +94,8 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
         Index documentIndex = client.index(renderedIndex);
 
         Integer count = Data.from(from).read(runContext)
-            .map(throwFunction(row -> {
+            .map(throwFunction(row ->
+            {
                 documentIndex.addDocuments(MAPPER.writeValueAsString(row));
                 return 1;
             }))

@@ -1,18 +1,21 @@
 package io.kestra.plugin.meilisearch;
 
+import java.io.*;
+import java.net.URI;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+
 import com.google.common.collect.ImmutableMap;
+
 import io.kestra.core.junit.annotations.KestraTest;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.kestra.core.storages.StorageInterface;
 import io.kestra.core.tenant.TenantService;
 import io.kestra.core.utils.IdUtils;
-import jakarta.inject.Inject;
-import org.junit.jupiter.api.Test;
 
-import java.io.*;
-import java.net.URI;
-import java.util.Map;
+import jakarta.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -33,7 +36,7 @@ class DocumentAddGetTest {
         Map<String, Object> document = Map.of(
             "id", id,
             "title", "Notebook",
-            "genres", new String[]{"Romance","Drama"}
+            "genres", new String[] { "Romance", "Drama" }
         );
         RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
         DocumentAdd documentAdd = TestUtils.createDocumentAdd(document, index);
