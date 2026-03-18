@@ -1,0 +1,74 @@
+id: all_meilisearch
+namespace: sanitychecks.plugin-meilisearch
+
+variables:
+  meilisearch_key: MASTER_KEY
+
+tasks:
+  - id: init
+    type: io.kestra.plugin.core.output.OutputValues
+    values:
+      randomPort: "{{ randomPort() }}"
+
+  - id: dockerStart
+    type: io.kestra.plugin.docker.Run
+    containerImage: getmeili/meilisearch:latest
+    portBindings:
+      - "{{ outputs.init.values.randomPort }}:7700"
+    wait: false
+    env:
+      MEILI_MASTER_KEY: "{{ vars.meilisearch_key }}"
+
+  - id: sleep
+    type: io.kestra.plugin.core.flow.Sleep
+    duration: PT30S
+
+  - id: write_documents
+    type: io.kestra.plugin.core.storage.Write
+    content: |
+      {"id":"book-1","name":"John Reader"}
+      {"id":"book-2","name":"Jane Writer"}
+      {"id":"book-3","name":"John Builder"}
+    extension: .ion
+
+  - id: add_documents
+    type: io.kestra.plugin.meilisearch.DocumentAdd
+    from: "{{ outputs.write_documents.uri }}"
+    index: "sanity-{{ execution.id }}"
+    url: "http://localhost:{{ outputs.init.values.randomPort }}"
+    key: "{{ vars.meilisearch_key }}"
+
+  - id: index_wait
+    type: io.kestra.plugin.core.flow.Sleep
+    duration: PT2S
+
+  - id: get_document
+    type: io.kestra.plugin.meilisearch.DocumentGet
+    documentId: book-1
+    index: "sanity-{{ execution.id }}"
+    url: "http://localhost:{{ outputs.init.values.randomPort }}"
+    key: "{{ vars.meilisearch_key }}"
+
+  - id: search_documents
+    type: io.kestra.plugin.meilisearch.Search
+    query: John
+    index: "sanity-{{ execution.id }}"
+    url: "http://localhost:{{ outputs.init.values.randomPort }}"
+    key: "{{ vars.meilisearch_key }}"
+
+  - id: assert
+    type: io.kestra.plugin.core.execution.Assert
+    conditions:
+      - "{{ outputs.get_document.document.id == 'book-1' }}"
+      - "{{ outputs.get_document.document.name == 'John Reader' }}"
+      - "{{ outputs.search_documents.totalHits == 2 }}"
+      - "{{ fromIon(read(outputs.search_documents.uri), allRows=true) | length == 2 }}"
+
+finally:
+  - id: purge
+    type: io.kestra.plugin.core.storage.PurgeCurrentExecutionFiles
+
+  - id: dockerStop
+    type: io.kestra.plugin.docker.Stop
+    containerId: "{{ outputs.dockerStart.taskRunner.containerId }}"
+    kill: true
