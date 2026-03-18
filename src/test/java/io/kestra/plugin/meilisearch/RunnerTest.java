@@ -15,10 +15,6 @@ class RunnerTest {
     @Test
     @ExecuteFlow("sanity-checks/all_meilisearch.yaml")
     void all_meilisearch(Execution execution) {
-        execution.getTaskRunList().forEach(taskRun -> {
-            System.out.println(taskRun.getTaskId() + " - " + taskRun.getId());
-        });
-        
         assertThat(execution.getTaskRunList(), hasSize(10));
         assertThat(execution.getState().getCurrent(), is(State.Type.SUCCESS));
     }

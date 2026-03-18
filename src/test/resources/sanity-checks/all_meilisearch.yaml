@@ -10,7 +10,7 @@ tasks:
     type: io.kestra.plugin.docker.Run
     containerImage: getmeili/meilisearch:latest
     portBindings:
-      - "7700:7700"
+      - 7701:7700
     wait: false
     env:
       MEILI_MASTER_KEY: "{{ vars.meilisearch_key }}"
