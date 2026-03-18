@@ -93,6 +93,7 @@ dependencies {
     testAnnotationProcessor "io.kestra:processor"
     testImplementation "io.kestra:core"
     testImplementation "io.kestra:tests"
+    testImplementation group: "io.kestra", name: "script", version: kestraVersion
     // Kestra deps needed only to have a runner for unit tests
     testImplementation "io.kestra:repository-memory"
     testImplementation "io.kestra:runner-memory"

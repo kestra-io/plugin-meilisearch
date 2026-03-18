@@ -2,7 +2,7 @@ id: all_meilisearch
 namespace: sanitychecks.plugin-meilisearch
 
 variables:
-  meilisearch_url: http://localhost:7711
+  meilisearch_url: http://localhost:7700
   meilisearch_key: MASTER_KEY
 
 tasks:
