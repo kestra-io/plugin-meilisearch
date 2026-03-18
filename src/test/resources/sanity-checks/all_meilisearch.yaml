@@ -2,15 +2,19 @@ id: all_meilisearch
 namespace: sanitychecks.plugin-meilisearch
 
 variables:
-  meilisearch_url: http://localhost:7701
   meilisearch_key: MASTER_KEY
 
 tasks:
+  - id: init
+    type: io.kestra.plugin.core.output.OutputValues
+    values:
+      randomPort: "{{ randomPort() }}"
+
   - id: dockerStart
     type: io.kestra.plugin.docker.Run
     containerImage: getmeili/meilisearch:latest
     portBindings:
-      - 7701:7700
+      - "{{ outputs.init.values.randomPort }}:7700"
     wait: false
     env:
       MEILI_MASTER_KEY: "{{ vars.meilisearch_key }}"
@@ -31,7 +35,7 @@ tasks:
     type: io.kestra.plugin.meilisearch.DocumentAdd
     from: "{{ outputs.write_documents.uri }}"
     index: "sanity-{{ execution.id }}"
-    url: "{{ vars.meilisearch_url }}"
+    url: "http://localhost:{{ outputs.init.values.randomPort }}"
     key: "{{ vars.meilisearch_key }}"
 
   - id: index_wait
@@ -42,14 +46,14 @@ tasks:
     type: io.kestra.plugin.meilisearch.DocumentGet
     documentId: book-1
     index: "sanity-{{ execution.id }}"
-    url: "{{ vars.meilisearch_url }}"
+    url: "http://localhost:{{ outputs.init.values.randomPort }}"
     key: "{{ vars.meilisearch_key }}"
 
   - id: search_documents
     type: io.kestra.plugin.meilisearch.Search
     query: John
     index: "sanity-{{ execution.id }}"
-    url: "{{ vars.meilisearch_url }}"
+    url: "http://localhost:{{ outputs.init.values.randomPort }}"
     key: "{{ vars.meilisearch_key }}"
 
   - id: assert
