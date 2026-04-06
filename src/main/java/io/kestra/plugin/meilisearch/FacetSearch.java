@@ -20,6 +20,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import reactor.core.publisher.Flux;
+import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -71,17 +72,21 @@ public class FacetSearch extends AbstractMeilisearchConnection implements Runnab
 
     @Schema(title = "Index", description = "Name of the Meilisearch index to search.")
     @NotNull
+    @PluginProperty(group = "main")
     private Property<String> index;
 
     @Schema(title = "Facet name", description = "Facet attribute configured as filterable (e.g., facetName \"genre\" on a film index).")
     @NotNull
+    @PluginProperty(group = "main")
     private Property<String> facetName;
 
     @Schema(title = "Facet query", description = "Query string applied to the specified facet; optional.")
+    @PluginProperty(group = "advanced")
     private Property<String> facetQuery;
 
     @Schema(title = "Filters", description = "List of Meilisearch filters applied to the facet search; defaults to an empty list.")
     @Builder.Default
+    @PluginProperty(group = "processing")
     private Property<List<String>> filters = Property.ofValue(new ArrayList<>());
 
     @Override

@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -54,10 +55,12 @@ import lombok.experimental.SuperBuilder;
 public class DocumentGet extends AbstractMeilisearchConnection implements RunnableTask<DocumentGet.Output> {
     @NotNull
     @Schema(title = "Document ID", description = "Identifier of the document to retrieve; templated before the request.")
+    @PluginProperty(group = "main")
     private Property<String> documentId;
 
     @NotNull
     @Schema(title = "Index", description = "Name of the Meilisearch index containing the document.")
+    @PluginProperty(group = "main")
     private Property<String> index;
 
     @Override

@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import reactor.core.publisher.Flux;
+import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -61,8 +62,10 @@ import reactor.core.publisher.Flux;
 public class Search extends AbstractMeilisearchConnection implements RunnableTask<Search.Output> {
 
     @Schema(title = "Search query", description = "Full-text query string sent to Meilisearch; templated before execution.")
+    @PluginProperty(group = "main")
     private Property<String> query;
     @Schema(title = "Index", description = "Name of the Meilisearch index to search.")
+    @PluginProperty(group = "advanced")
     private Property<String> index;
 
     @Override
