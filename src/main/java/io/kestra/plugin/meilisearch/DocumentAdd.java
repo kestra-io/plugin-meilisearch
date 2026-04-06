@@ -25,6 +25,7 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import static io.kestra.core.utils.Rethrow.throwFunction;
+import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -79,10 +80,12 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @NotNull
+    @PluginProperty(group = "main")
     private Object from;
 
     @NotNull
     @Schema(title = "Index", description = "Name of the Meilisearch index to add documents to.")
+    @PluginProperty(group = "main")
     private Property<String> index;
 
     @Override
