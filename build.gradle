@@ -98,7 +98,6 @@ dependencies {
     testImplementation "io.kestra:repository-memory"
     testImplementation "io.kestra:runner-memory"
     testImplementation "io.kestra:storage-local"
-    testImplementation group: "io.kestra", name: "worker", version: kestraVersion
     testImplementation group: "io.kestra", name: "indexer", version: kestraVersion
 
     // test
