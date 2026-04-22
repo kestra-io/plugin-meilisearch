@@ -18,6 +18,6 @@ public interface MeilisearchConnectionInterface {
     @Schema(
         title = "Meilisearch connection key"
     )
-    @PluginProperty(group = "main")
+    @PluginProperty(group = "main", secret = true)
     Property<String> getKey();
 }
