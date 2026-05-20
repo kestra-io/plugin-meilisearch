@@ -1,0 +1,17 @@
+# How to use the Meilisearch plugin
+
+Add, retrieve, and search documents in Meilisearch from Kestra flows.
+
+## Authentication
+
+Set `url` to your Meilisearch instance URL and `key` to your API key (both required). Store secrets in [secrets](https://kestra.io/docs/concepts/secret) and apply connection properties globally with [plugin defaults](https://kestra.io/docs/workflow-components/plugin-defaults).
+
+## Tasks
+
+`DocumentAdd` indexes documents into an `index` — set `from` to a `kestra://` URI or an inline list of document maps.
+
+`DocumentGet` retrieves a single document by `documentId` from an `index`.
+
+`Search` runs a full-text search — set `query` and optionally scope to an `index`.
+
+`FacetSearch` runs a faceted search on an `index` — set `facetName` (required) and optionally `facetQuery` and `filters` (a list of filter expressions).
