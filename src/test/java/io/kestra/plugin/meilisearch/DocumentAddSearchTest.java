@@ -48,8 +48,6 @@ class DocumentAddSearchTest {
 
         documentAdd.run(addRunContext);
 
-        Thread.sleep(500);
-
         RunContext searchRunContext = runContextFactory.of(ImmutableMap.of());
 
         Search search = TestUtils.createSearch(pattern, SEARCH_INDEX);
