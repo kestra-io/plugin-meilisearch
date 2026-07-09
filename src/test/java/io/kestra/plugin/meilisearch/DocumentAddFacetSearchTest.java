@@ -54,8 +54,6 @@ class DocumentAddFacetSearchTest {
         DocumentAdd documentAdd = TestUtils.createDocumentAdd(uri.toString(), FACET_SEARCH_INDEX);
         documentAdd.run(addRunContext);
 
-        Thread.sleep(500);
-
         RunContext facetSearchRunContext = runContextFactory.of(ImmutableMap.of());
         FacetSearch facetSearch = TestUtils.createFacetSearch(facetName, facetQuery, filters, FACET_SEARCH_INDEX);
         FacetSearch.Output facetSearchOutput = facetSearch.run(facetSearchRunContext);

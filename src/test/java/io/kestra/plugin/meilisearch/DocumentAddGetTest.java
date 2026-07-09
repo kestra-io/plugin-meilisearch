@@ -43,8 +43,6 @@ class DocumentAddGetTest {
 
         documentAdd.run(addRunContext);
 
-        Thread.sleep(500);
-
         RunContext getRunContext = runContextFactory.of(ImmutableMap.of());
 
         DocumentGet documentGet = TestUtils.createDocumentGet(id, index);
@@ -68,8 +66,6 @@ class DocumentAddGetTest {
         DocumentAdd documentAdd = TestUtils.createDocumentAdd(uri.toString(), index);
 
         documentAdd.run(addRunContext);
-
-        Thread.sleep(500);
 
         RunContext getRunContext = runContextFactory.of(ImmutableMap.of());
 
