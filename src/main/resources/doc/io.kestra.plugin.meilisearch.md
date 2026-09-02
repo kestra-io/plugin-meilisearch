@@ -4,7 +4,7 @@ Add, retrieve, and search documents in Meilisearch from Kestra flows.
 
 ## Authentication
 
-Set `url` to your Meilisearch instance URL and `key` to your API key (both required). Store secrets in [secrets](https://kestra.io/docs/concepts/secret) and apply connection properties globally with [plugin defaults](https://kestra.io/docs/workflow-components/plugin-defaults).
+Set `url` to your Meilisearch instance URL and `key` to your API key (both required). Store secrets in [secrets](https://kestra.io/docs/concepts/secret) and set connection properties on each task.
 
 ## Tasks
 
