@@ -140,16 +140,22 @@ public class DocumentDelete extends AbstractMeilisearchConnection implements Run
         String renderedFilter = this.filter != null ? runContext.render(this.filter).as(String.class).orElse(null) : null;
 
         int targetCount = 0;
-        if (Boolean.TRUE.equals(renderedDeleteAll)) targetCount++;
-        if (renderedDocumentId != null && !renderedDocumentId.isBlank()) targetCount++;
-        if (renderedDocumentIds != null && !renderedDocumentIds.isEmpty()) targetCount++;
-        if (renderedFilter != null && !renderedFilter.isBlank()) targetCount++;
+        if (Boolean.TRUE.equals(renderedDeleteAll))
+            targetCount++;
+        if (renderedDocumentId != null && !renderedDocumentId.isBlank())
+            targetCount++;
+        if (renderedDocumentIds != null && !renderedDocumentIds.isEmpty())
+            targetCount++;
+        if (renderedFilter != null && !renderedFilter.isBlank())
+            targetCount++;
 
         if (targetCount != 1) {
-            throw new IllegalArgumentException(String.format(
-                "Exactly one of 'documentId', 'documentIds', 'filter', or 'deleteAll: true' must be specified, but found %d.",
-                targetCount
-            ));
+            throw new IllegalArgumentException(
+                String.format(
+                    "Exactly one of 'documentId', 'documentIds', 'filter', or 'deleteAll: true' must be specified, but found %d.",
+                    targetCount
+                )
+            );
         }
 
         TaskInfo taskInfo;
@@ -171,13 +177,15 @@ public class DocumentDelete extends AbstractMeilisearchConnection implements Run
             var task = searchIndex.getTask(taskUid);
             if (TaskStatus.FAILED.equals(task.getStatus()) || TaskStatus.CANCELED.equals(task.getStatus())) {
                 TaskError error = task.getError();
-                throw new RuntimeException(String.format(
-                    "Meilisearch deletion task %d on index '%s' ended with status %s%s",
-                    taskUid,
-                    renderedIndex,
-                    task.getStatus(),
-                    error != null ? ": " + error.getMessage() + " (" + error.getCode() + ")" : ""
-                ));
+                throw new RuntimeException(
+                    String.format(
+                        "Meilisearch deletion task %d on index '%s' ended with status %s%s",
+                        taskUid,
+                        renderedIndex,
+                        task.getStatus(),
+                        error != null ? ": " + error.getMessage() + " (" + error.getCode() + ")" : ""
+                    )
+                );
             }
         }
 

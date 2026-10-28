@@ -6,6 +6,9 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableMap;
+import com.meilisearch.sdk.Client;
+import com.meilisearch.sdk.Config;
+import com.meilisearch.sdk.model.TaskInfo;
 
 import io.kestra.core.junit.annotations.KestraTest;
 import io.kestra.core.models.property.Property;
@@ -15,6 +18,7 @@ import io.kestra.core.runners.RunContextFactory;
 import jakarta.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -103,6 +107,84 @@ class DocumentDeleteTest {
 
         Search.Output afterDeleteOutput = search.run(searchRunContext);
         assertThat(afterDeleteOutput.getTotalHits(), is(0L));
+    }
+
+    @Test
+    void shouldDeleteDocumentsByFilter() throws Exception {
+        final String index = "testDeleteByFilter";
+        Client client = new Client(new Config("http://localhost:7700", "MASTER_KEY"));
+        TaskInfo settingsTask = client.index(index).updateFilterableAttributesSettings(new String[] { "genre" });
+        client.index(index).waitForTask(settingsTask.getTaskUid(), 10000, 500);
+
+        List<Map<String, Object>> documents = List.of(
+            Map.of("id", "401", "title", "The Hangover", "genre", "comedy"),
+            Map.of("id", "402", "title", "Superbad", "genre", "comedy"),
+            Map.of("id", "403", "title", "The Shining", "genre", "horror")
+        );
+        RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
+        DocumentAdd documentAdd = TestUtils.createDocumentAdd(documents, index);
+        documentAdd.run(addRunContext);
+
+        RunContext searchRunContext = runContextFactory.of(ImmutableMap.of());
+        Search search = TestUtils.createSearch("", index);
+        Search.Output searchOutput = search.run(searchRunContext);
+        assertThat(searchOutput.getTotalHits(), is(3L));
+
+        RunContext deleteRunContext = runContextFactory.of(ImmutableMap.of());
+        DocumentDelete documentDelete = TestUtils.createDocumentDeleteByFilter("genre = 'horror'", index);
+        DocumentDelete.Output deleteOutput = documentDelete.run(deleteRunContext);
+
+        assertThat(deleteOutput.getTaskUid(), notNullValue());
+
+        Search.Output afterDeleteOutput = search.run(searchRunContext);
+        assertThat(afterDeleteOutput.getTotalHits(), is(2L));
+    }
+
+    @Test
+    void shouldDeleteWithoutWaitingForIndexing() throws Exception {
+        final String index = "testDeleteNoWait";
+        Map<String, Object> document = Map.of(
+            "id", "501",
+            "title", "Memento"
+        );
+        RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
+        DocumentAdd documentAdd = TestUtils.createDocumentAdd(document, index);
+        documentAdd.run(addRunContext);
+
+        RunContext deleteRunContext = runContextFactory.of(ImmutableMap.of());
+        DocumentDelete documentDelete = DocumentDelete.builder()
+            .documentId(Property.ofValue("501"))
+            .index(Property.ofValue(index))
+            .waitForIndexing(Property.ofValue(false))
+            .url(TestUtils.URL)
+            .key(TestUtils.MASTER_KEY)
+            .build();
+        DocumentDelete.Output deleteOutput = documentDelete.run(deleteRunContext);
+
+        assertThat(deleteOutput.getTaskUid(), notNullValue());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenFilterTaskFails() throws Exception {
+        final String index = "testDeleteFilterFail";
+        Map<String, Object> document = Map.of(
+            "id", "601",
+            "title", "The Matrix"
+        );
+        RunContext addRunContext = runContextFactory.of(ImmutableMap.of());
+        DocumentAdd documentAdd = TestUtils.createDocumentAdd(document, index);
+        documentAdd.run(addRunContext);
+
+        RunContext deleteRunContext = runContextFactory.of(ImmutableMap.of());
+        DocumentDelete documentDelete = DocumentDelete.builder()
+            .filter(Property.ofValue("invalidAttribute = 'value'"))
+            .index(Property.ofValue(index))
+            .url(TestUtils.URL)
+            .key(TestUtils.MASTER_KEY)
+            .build();
+
+        Exception exception = assertThrows(RuntimeException.class, () -> documentDelete.run(deleteRunContext));
+        assertThat(exception.getMessage(), containsString("Meilisearch deletion task"));
     }
 
     @Test

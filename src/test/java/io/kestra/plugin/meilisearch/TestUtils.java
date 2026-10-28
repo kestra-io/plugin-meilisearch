@@ -73,4 +73,13 @@ public class TestUtils {
             .key(MASTER_KEY)
             .build();
     }
+
+    public static DocumentDelete createDocumentDeleteByFilter(String filter, String index) {
+        return DocumentDelete.builder()
+            .filter(Property.ofValue(filter))
+            .index(Property.ofValue(index))
+            .url(URL)
+            .key(MASTER_KEY)
+            .build();
+    }
 }
