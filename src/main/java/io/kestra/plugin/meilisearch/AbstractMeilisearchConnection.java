@@ -5,7 +5,6 @@ import java.time.Duration;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Config;
 import com.meilisearch.sdk.Index;
-import com.meilisearch.sdk.model.TaskError;
 import com.meilisearch.sdk.model.TaskStatus;
 
 import io.kestra.core.exceptions.IllegalVariableEvaluationException;
@@ -36,13 +35,13 @@ public abstract class AbstractMeilisearchConnection extends Task implements Meil
         return new Client(config);
     }
 
-    protected com.meilisearch.sdk.model.Task waitForTask(Index index, Integer taskUid, Duration waitTimeout) throws Exception {
-        int timeoutMs = (int) (waitTimeout != null ? waitTimeout : DEFAULT_WAIT_TIMEOUT).toMillis();
-        index.waitForTask(taskUid, timeoutMs, WAIT_INTERVAL_MS);
+    // The SDK's waitForTask returns normally on FAILED or CANCELED, so the status is checked here.
+    protected com.meilisearch.sdk.model.Task waitForTask(Index index, Integer taskUid, Duration waitTimeout) {
+        index.waitForTask(taskUid, (int) waitTimeout.toMillis(), WAIT_INTERVAL_MS);
         var task = index.getTask(taskUid);
         if (TaskStatus.FAILED.equals(task.getStatus()) || TaskStatus.CANCELED.equals(task.getStatus())) {
-            TaskError error = task.getError();
-            String errorMessage = error != null ? ": %s (%s)".formatted(error.getMessage(), error.getCode()) : "";
+            var error = task.getError();
+            var errorMessage = error != null ? ": %s (%s)".formatted(error.getMessage(), error.getCode()) : "";
             throw new IllegalStateException(
                 "Meilisearch task %d on index '%s' ended with status %s%s".formatted(
                     taskUid,

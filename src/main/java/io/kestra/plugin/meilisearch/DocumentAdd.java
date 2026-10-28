@@ -130,9 +130,9 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
             .orElse(0);
 
         if (runContext.render(this.waitForIndexing).as(Boolean.class).orElse(true)) {
-            var timeout = runContext.render(this.waitTimeout).as(Duration.class).orElse(DEFAULT_WAIT_TIMEOUT);
+            var rTimeout = runContext.render(this.waitTimeout).as(Duration.class).orElse(DEFAULT_WAIT_TIMEOUT);
             for (Integer taskUid : taskUids) {
-                this.waitForTask(documentIndex, taskUid, timeout);
+                this.waitForTask(documentIndex, taskUid, rTimeout);
             }
         }
 

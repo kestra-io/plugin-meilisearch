@@ -32,10 +32,10 @@ class DocumentDeleteTest {
 
     @Test
     void shouldDeleteSingleDocument() throws Exception {
-        final String index = "testDeleteSingle%s".formatted(IdUtils.create());
-        final String id = "101";
+        var index = "testDeleteSingle%s".formatted(IdUtils.create());
+        var id = "101";
 
-        Map<String, Object> document = Map.of(
+        var document = Map.of(
             "id", id,
             "title", "The Matrix"
         );
@@ -61,8 +61,8 @@ class DocumentDeleteTest {
 
     @Test
     void shouldDeleteMultipleDocuments() throws Exception {
-        final String index = "testDeleteBatch%s".formatted(IdUtils.create());
-        List<Map<String, Object>> documents = List.of(
+        var index = "testDeleteBatch%s".formatted(IdUtils.create());
+        var documents = List.of(
             Map.of("id", "201", "title", "Inception"),
             Map.of("id", "202", "title", "Interstellar"),
             Map.of("id", "203", "title", "Memento")
@@ -89,8 +89,8 @@ class DocumentDeleteTest {
 
     @Test
     void shouldDeleteAllDocuments() throws Exception {
-        final String index = "testDeleteAll%s".formatted(IdUtils.create());
-        List<Map<String, Object>> documents = List.of(
+        var index = "testDeleteAll%s".formatted(IdUtils.create());
+        var documents = List.of(
             Map.of("id", "301", "title", "Dune"),
             Map.of("id", "302", "title", "Dune 2")
         );
@@ -116,12 +116,12 @@ class DocumentDeleteTest {
 
     @Test
     void shouldDeleteDocumentsByFilter() throws Exception {
-        final String index = "testDeleteByFilter%s".formatted(IdUtils.create());
-        Client client = new Client(new Config("http://localhost:7700", "MASTER_KEY"));
+        var index = "testDeleteByFilter%s".formatted(IdUtils.create());
+        var client = new Client(new Config("http://localhost:7700", "MASTER_KEY"));
         TaskInfo settingsTask = client.index(index).updateFilterableAttributesSettings(new String[] { "genre" });
         client.index(index).waitForTask(settingsTask.getTaskUid(), 10000, 500);
 
-        List<Map<String, Object>> documents = List.of(
+        var documents = List.of(
             Map.of("id", "401", "title", "The Hangover", "genre", "comedy"),
             Map.of("id", "402", "title", "Superbad", "genre", "comedy"),
             Map.of("id", "403", "title", "The Shining", "genre", "horror")
@@ -148,8 +148,8 @@ class DocumentDeleteTest {
 
     @Test
     void shouldDeleteWithoutWaitingForIndexing() throws Exception {
-        final String index = "testDeleteNoWait%s".formatted(IdUtils.create());
-        Map<String, Object> document = Map.of(
+        var index = "testDeleteNoWait%s".formatted(IdUtils.create());
+        var document = Map.of(
             "id", "501",
             "title", "Memento"
         );
@@ -158,7 +158,7 @@ class DocumentDeleteTest {
         documentAdd.run(addRunContext);
 
         RunContext deleteRunContext = runContextFactory.of(ImmutableMap.of());
-        DocumentDelete documentDelete = DocumentDelete.builder()
+        var documentDelete = DocumentDelete.builder()
             .documentId(Property.ofValue("501"))
             .index(Property.ofValue(index))
             .waitForIndexing(Property.ofValue(false))
@@ -173,8 +173,8 @@ class DocumentDeleteTest {
 
     @Test
     void shouldThrowExceptionWhenFilterTaskFails() throws Exception {
-        final String index = "testDeleteFilterFail%s".formatted(IdUtils.create());
-        Map<String, Object> document = Map.of(
+        var index = "testDeleteFilterFail%s".formatted(IdUtils.create());
+        var document = Map.of(
             "id", "601",
             "title", "The Matrix"
         );
@@ -183,7 +183,7 @@ class DocumentDeleteTest {
         documentAdd.run(addRunContext);
 
         RunContext deleteRunContext = runContextFactory.of(ImmutableMap.of());
-        DocumentDelete documentDelete = DocumentDelete.builder()
+        var documentDelete = DocumentDelete.builder()
             .filter(Property.ofValue("invalidAttribute = 'value'"))
             .index(Property.ofValue(index))
             .url(TestUtils.URL)
@@ -197,7 +197,7 @@ class DocumentDeleteTest {
     @Test
     void shouldThrowExceptionWhenNoTargetSpecified() {
         RunContext runContext = runContextFactory.of(ImmutableMap.of());
-        DocumentDelete documentDelete = DocumentDelete.builder()
+        var documentDelete = DocumentDelete.builder()
             .index(Property.ofValue("emptyIndex%s".formatted(IdUtils.create())))
             .url(TestUtils.URL)
             .key(TestUtils.MASTER_KEY)
@@ -209,7 +209,7 @@ class DocumentDeleteTest {
     @Test
     void shouldThrowExceptionWhenMultipleTargetsSpecified() {
         RunContext runContext = runContextFactory.of(ImmutableMap.of());
-        DocumentDelete documentDelete = DocumentDelete.builder()
+        var documentDelete = DocumentDelete.builder()
             .index(Property.ofValue("multipleTargetsIndex%s".formatted(IdUtils.create())))
             .documentId(Property.ofValue("123"))
             .deleteAll(Property.ofValue(true))

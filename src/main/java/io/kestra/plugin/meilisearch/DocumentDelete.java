@@ -3,8 +3,6 @@ package io.kestra.plugin.meilisearch;
 import java.time.Duration;
 import java.util.List;
 
-import org.slf4j.Logger;
-
 import com.meilisearch.sdk.model.TaskInfo;
 
 import io.kestra.core.models.annotations.Example;
@@ -30,7 +28,6 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
-@Metric(name = "documentDeleted", type = "counter", description = "The number of documents deleted.")
 @Schema(
     title = "Delete documents from Meilisearch",
     description = """
@@ -107,6 +104,13 @@ import lombok.experimental.SuperBuilder;
                     deleteAll: true
                 """
         )
+    },
+    metrics = {
+        @Metric(
+            name = "documentDeleted",
+            description = "The number of documents deleted from Meilisearch",
+            type = Counter.TYPE
+        )
     }
 )
 public class DocumentDelete extends AbstractMeilisearchConnection implements RunnableTask<DocumentDelete.Output> {
@@ -119,7 +123,7 @@ public class DocumentDelete extends AbstractMeilisearchConnection implements Run
     @Schema(
         title = "Document ID",
         description = """
-            Identifier of a single document to delete. Exactly one target (`documentId`, `documentIds`, `filter`, or `deleteAll: true`) must be specified.
+            Identifier of a single document to delete.
             """
     )
     @PluginProperty(group = "main")
@@ -128,7 +132,7 @@ public class DocumentDelete extends AbstractMeilisearchConnection implements Run
     @Schema(
         title = "Document IDs",
         description = """
-            List of document identifiers to delete. Exactly one target (`documentId`, `documentIds`, `filter`, or `deleteAll: true`) must be specified.
+            List of document identifiers to delete.
             """
     )
     @PluginProperty(group = "main")
@@ -137,7 +141,7 @@ public class DocumentDelete extends AbstractMeilisearchConnection implements Run
     @Schema(
         title = "Filter",
         description = """
-            Filter expression matching documents to delete. Exactly one target (`documentId`, `documentIds`, `filter`, or `deleteAll: true`) must be specified.
+            Filter expression matching documents to delete.
             Note: Filter expressions require the attributes used to be declared in the index's `filterableAttributes` settings.
             """
     )
@@ -148,7 +152,6 @@ public class DocumentDelete extends AbstractMeilisearchConnection implements Run
         title = "Delete all",
         description = """
             Whether to delete all documents in the index. Defaults to false.
-            Must be explicitly set to true when deleting all documents. Exactly one target (`documentId`, `documentIds`, `filter`, or `deleteAll: true`) must be specified.
             """
     )
     @Builder.Default
@@ -173,7 +176,7 @@ public class DocumentDelete extends AbstractMeilisearchConnection implements Run
 
     @Override
     public Output run(RunContext runContext) throws Exception {
-        Logger logger = runContext.logger();
+        var logger = runContext.logger();
 
         var client = this.createClient(runContext);
         var rIndex = runContext.render(this.index).as(String.class).orElseThrow(() -> new IllegalArgumentException("Index is required"));
@@ -211,12 +214,12 @@ public class DocumentDelete extends AbstractMeilisearchConnection implements Run
             taskInfo = searchIndex.deleteDocumentsByFilter(rFilter);
         }
 
-        Integer taskUid = taskInfo.getTaskUid();
+        var taskUid = taskInfo.getTaskUid();
         Integer deletedCount = null;
 
         if (runContext.render(this.waitForIndexing).as(Boolean.class).orElse(true)) {
-            var timeout = runContext.render(this.waitTimeout).as(Duration.class).orElse(DEFAULT_WAIT_TIMEOUT);
-            var task = this.waitForTask(searchIndex, taskUid, timeout);
+            var rTimeout = runContext.render(this.waitTimeout).as(Duration.class).orElse(DEFAULT_WAIT_TIMEOUT);
+            var task = this.waitForTask(searchIndex, taskUid, rTimeout);
             if (task.getDetails() != null) {
                 deletedCount = task.getDetails().getDeletedDocuments();
                 runContext.metric(Counter.of("documentDeleted", deletedCount));
