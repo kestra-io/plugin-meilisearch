@@ -3,7 +3,7 @@
 ## What
 
 - Provides plugin components under `io.kestra.plugin.meilisearch`.
-- Includes classes such as `DocumentAdd`, `DocumentGet`, `FacetSearch`, `Search`.
+- Includes classes such as `DocumentAdd`, `DocumentDelete`, `DocumentGet`, `FacetSearch`, `Search`.
 
 ## Why
 
@@ -26,6 +26,7 @@ Infrastructure dependencies (Docker Compose services):
 ### Key Plugin Classes
 
 - `io.kestra.plugin.meilisearch.DocumentAdd`
+- `io.kestra.plugin.meilisearch.DocumentDelete`
 - `io.kestra.plugin.meilisearch.DocumentGet`
 - `io.kestra.plugin.meilisearch.FacetSearch`
 - `io.kestra.plugin.meilisearch.Search`

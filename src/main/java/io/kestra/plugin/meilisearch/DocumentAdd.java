@@ -9,12 +9,11 @@ import org.slf4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
-import com.meilisearch.sdk.model.TaskError;
-import com.meilisearch.sdk.model.TaskStatus;
 
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Metric;
 import io.kestra.core.models.annotations.Plugin;
+import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.executions.metrics.Counter;
 import io.kestra.core.models.property.Data;
 import io.kestra.core.models.property.Property;
@@ -31,7 +30,6 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import static io.kestra.core.utils.Rethrow.throwFunction;
-import io.kestra.core.models.annotations.PluginProperty;
 
 @SuperBuilder
 @ToString
@@ -85,8 +83,6 @@ import io.kestra.core.models.annotations.PluginProperty;
 public class DocumentAdd extends AbstractMeilisearchConnection implements RunnableTask<DocumentAdd.Output>, Data.From {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final int DEFAULT_BATCH_SIZE = 1000;
-    private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofMinutes(5);
-    private static final int WAIT_INTERVAL_MS = 500;
 
     @NotNull
     @PluginProperty(group = "main")
@@ -134,20 +130,9 @@ public class DocumentAdd extends AbstractMeilisearchConnection implements Runnab
             .orElse(0);
 
         if (runContext.render(this.waitForIndexing).as(Boolean.class).orElse(true)) {
-            int timeoutMs = (int) runContext.render(this.waitTimeout).as(Duration.class).orElse(DEFAULT_WAIT_TIMEOUT).toMillis();
+            var timeout = runContext.render(this.waitTimeout).as(Duration.class).orElse(DEFAULT_WAIT_TIMEOUT);
             for (Integer taskUid : taskUids) {
-                documentIndex.waitForTask(taskUid, timeoutMs, WAIT_INTERVAL_MS);
-                var task = documentIndex.getTask(taskUid);
-                if (TaskStatus.FAILED.equals(task.getStatus()) || TaskStatus.CANCELED.equals(task.getStatus())) {
-                    TaskError error = task.getError();
-                    throw new RuntimeException(String.format(
-                        "Meilisearch indexing task %d on index '%s' ended with status %s%s",
-                        taskUid,
-                        renderedIndex,
-                        task.getStatus(),
-                        error != null ? ": " + error.getMessage() + " (" + error.getCode() + ")" : ""
-                    ));
-                }
+                this.waitForTask(documentIndex, taskUid, timeout);
             }
         }
 
