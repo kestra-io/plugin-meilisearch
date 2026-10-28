@@ -46,4 +46,40 @@ public class TestUtils {
             .key(MASTER_KEY)
             .build();
     }
+
+    public static DocumentDelete createDocumentDelete(String id, String index) {
+        return DocumentDelete.builder()
+            .documentId(Property.ofValue(id))
+            .index(Property.ofValue(index))
+            .url(URL)
+            .key(MASTER_KEY)
+            .build();
+    }
+
+    public static DocumentDelete createDocumentDeleteBatch(List<String> ids, String index) {
+        return DocumentDelete.builder()
+            .documentIds(Property.ofValue(ids))
+            .index(Property.ofValue(index))
+            .url(URL)
+            .key(MASTER_KEY)
+            .build();
+    }
+
+    public static DocumentDelete createDocumentDeleteAll(String index) {
+        return DocumentDelete.builder()
+            .deleteAll(Property.ofValue(true))
+            .index(Property.ofValue(index))
+            .url(URL)
+            .key(MASTER_KEY)
+            .build();
+    }
+
+    public static DocumentDelete createDocumentDeleteByFilter(String filter, String index) {
+        return DocumentDelete.builder()
+            .filter(Property.ofValue(filter))
+            .index(Property.ofValue(index))
+            .url(URL)
+            .key(MASTER_KEY)
+            .build();
+    }
 }

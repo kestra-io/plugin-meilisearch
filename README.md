@@ -46,7 +46,7 @@
 ## What
 
 - Provides plugin components under `io.kestra.plugin.meilisearch`.
-- Includes classes such as `DocumentAdd`, `DocumentGet`, `FacetSearch`, `Search`.
+- Includes classes such as `DocumentAdd`, `DocumentDelete`, `DocumentGet`, `FacetSearch`, `Search`.
 
 ## Documentation
 * Full documentation can be found under: [kestra.io/docs](https://kestra.io/docs)
