@@ -139,6 +139,19 @@ public class DocumentDelete extends AbstractMeilisearchConnection implements Run
         List<String> renderedDocumentIds = this.documentIds != null ? runContext.render(this.documentIds).asList(String.class) : null;
         String renderedFilter = this.filter != null ? runContext.render(this.filter).as(String.class).orElse(null) : null;
 
+        int targetCount = 0;
+        if (Boolean.TRUE.equals(renderedDeleteAll)) targetCount++;
+        if (renderedDocumentId != null && !renderedDocumentId.isBlank()) targetCount++;
+        if (renderedDocumentIds != null && !renderedDocumentIds.isEmpty()) targetCount++;
+        if (renderedFilter != null && !renderedFilter.isBlank()) targetCount++;
+
+        if (targetCount != 1) {
+            throw new IllegalArgumentException(String.format(
+                "Exactly one of 'documentId', 'documentIds', 'filter', or 'deleteAll: true' must be specified, but found %d.",
+                targetCount
+            ));
+        }
+
         TaskInfo taskInfo;
         if (Boolean.TRUE.equals(renderedDeleteAll)) {
             taskInfo = searchIndex.deleteAllDocuments();
@@ -146,10 +159,8 @@ public class DocumentDelete extends AbstractMeilisearchConnection implements Run
             taskInfo = searchIndex.deleteDocument(renderedDocumentId);
         } else if (renderedDocumentIds != null && !renderedDocumentIds.isEmpty()) {
             taskInfo = searchIndex.deleteDocuments(renderedDocumentIds);
-        } else if (renderedFilter != null && !renderedFilter.isBlank()) {
-            taskInfo = searchIndex.deleteDocumentsByFilter(renderedFilter);
         } else {
-            throw new IllegalArgumentException("At least one of 'documentId', 'documentIds', 'filter', or 'deleteAll: true' must be specified.");
+            taskInfo = searchIndex.deleteDocumentsByFilter(renderedFilter);
         }
 
         Integer taskUid = taskInfo.getTaskUid();

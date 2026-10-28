@@ -116,4 +116,18 @@ class DocumentDeleteTest {
 
         assertThrows(IllegalArgumentException.class, () -> documentDelete.run(runContext));
     }
+
+    @Test
+    void shouldThrowExceptionWhenMultipleTargetsSpecified() {
+        RunContext runContext = runContextFactory.of(ImmutableMap.of());
+        DocumentDelete documentDelete = DocumentDelete.builder()
+            .index(Property.ofValue("multipleTargetsIndex"))
+            .documentId(Property.ofValue("123"))
+            .deleteAll(Property.ofValue(true))
+            .url(TestUtils.URL)
+            .key(TestUtils.MASTER_KEY)
+            .build();
+
+        assertThrows(IllegalArgumentException.class, () -> documentDelete.run(runContext));
+    }
 }
